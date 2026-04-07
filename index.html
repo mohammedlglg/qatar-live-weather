@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Qatar Live Weather Map powered by wttr.in — real-time conditions, 3-day forecast, hourly breakdown. Bilingual EN/AR. By MTAHA.">
+    <meta name="author" content="MTAHA">
+    <title>Qatar Live Weather</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-slate-50 p-4 md:p-8 flex flex-col min-h-screen">
+<div class="max-w-7xl mx-auto flex-grow w-full">
+
+    <!-- ── Header ──────────────────────────────────────────── -->
+    <header class="mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="text-center md:text-left">
+            <h1 id="map-title" class="text-3xl font-bold text-slate-800">🇶🇦 Qatar Live Weather</h1>
+            <div class="flex items-center gap-2 mt-1">
+                <span class="wttr-badge">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M12 2a10 10 0 0 1 10 10"/><path d="M12 2a10 10 0 0 0-10 10"/><path d="M2 12a10 10 0 0 0 10 10"/><path d="M22 12a10 10 0 0 1-10 10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2c-2.5 4-4 7-4 10s1.5 6 4 10"/><path d="M12 2c2.5 4 4 7 4 10s-1.5 6-4 10"/></svg>
+                    Powered by wttr.in
+                </span>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3 flex-wrap justify-center">
+            <!-- Language pill -->
+            <div class="flex items-center bg-white rounded-full border border-slate-200 shadow-sm overflow-hidden">
+                <button id="btn-en" onclick="setLang('en')"
+                    class="lang-btn active px-4 py-1.5 text-sm font-bold transition-all">EN</button>
+                <button id="btn-ar" onclick="setLang('ar')"
+                    class="lang-btn px-4 py-1.5 text-sm font-bold transition-all">ع</button>
+            </div>
+            <!-- Region selector -->
+            <div class="flex items-center gap-2 bg-white p-2 rounded-lg shadow-sm border border-slate-200">
+                <label id="region-label" for="region-select"
+                       class="text-sm font-semibold text-slate-700 ml-1">Select Region:</label>
+                <select id="region-select"
+                        class="bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-md
+                               focus:ring-emerald-500 focus:border-emerald-500 block p-2"></select>
+            </div>
+        </div>
+    </header>
+
+    <!-- ── Map ─────────────────────────────────────────────── -->
+    <div class="relative bg-white p-2 rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+        <!-- Loading overlay with progress bar -->
+        <div id="loading" class="loading-overlay">
+            <div id="loading-text" class="text-lg">Fetching from wttr.in...</div>
+            <div id="loading-progress" class="loading-progress">0 / 0</div>
+            <div class="loading-bar-track">
+                <div id="loading-bar-fill" class="loading-bar-fill" style="width:0%"></div>
+            </div>
+        </div>
+        <div id="map"></div>
+        <p id="collection-time" class="text-slate-500 italic text-xs px-1 py-1">
+            Updating current conditions...
+        </p>
+    </div>
+
+    <!-- ── Info cards ───────────────────────────────────────── -->
+    <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm mb-8">
+        <div class="bg-emerald-50 p-4 rounded-lg border border-emerald-100">
+            <h3 id="card1-title" class="font-semibold text-emerald-800 mb-1">Rich Weather Data</h3>
+            <p  id="card1-body"  class="text-emerald-700">
+                Click any marker to see current conditions, 3-day forecast, and hourly breakdown.
+            </p>
+        </div>
+        <div class="bg-teal-50 p-4 rounded-lg border border-teal-100">
+            <h3 id="card2-title" class="font-semibold text-teal-800 mb-1">Powered by wttr.in</h3>
+            <p  id="card2-body"  class="text-teal-700">
+                Temperature, humidity, UV index, visibility, cloud cover, astronomy and more.
+            </p>
+        </div>
+        <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
+            <h3 id="card3-title" class="font-semibold text-slate-800 mb-1">Note on Loading</h3>
+            <p  id="card3-body"  class="text-slate-700">
+                wttr.in fetches one location at a time. Large regions load progressively.
+            </p>
+        </div>
+    </div>
+
+    <!-- ── Footer ──────────────────────────────────────────── -->
+    <footer class="mt-auto pt-6 border-t border-slate-200 text-slate-500 text-xs
+                   flex flex-col md:flex-row justify-between items-center gap-4 pb-4">
+        <div class="flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 flex-shrink-0"
+                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span>
+                <strong>Data Source :</strong>
+                <a href="https://wttr.in" class="underline hover:text-emerald-600">wttr.in</a> &amp;
+                <a href="https://wikipedia.org" class="underline hover:text-emerald-600">Wikipedia</a>
+            </span>
+        </div>
+        <div class="sig-badge">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none"
+                 viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+            </svg>
+            by <span>MTAHA</span>
+        </div>
+    </footer>
+
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="translations.js"></script>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
