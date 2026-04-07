@@ -31,7 +31,7 @@ wttr.in has **no batch API** — each location is fetched individually. This mea
 ## 📂 Project Structure
 
 ```
-qatar-wttr/
+qatar-live-weather/
 ├── index.html          ← Entry point (emerald green theme)
 ├── style.css           ← Styles (wttr.in branded, progress bar, forecast strip, hourly row)
 ├── translations.js     ← EN/AR strings including wttr-specific fields
