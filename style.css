@@ -176,13 +176,13 @@ html[dir="rtl"] .weather-popup {
 }
 
 /* ── wttr badge ──────────────────────────────────────────── */
-.wttr-badge {
+/* .wttr-badge {
     display: inline-flex; align-items: center; gap: 4px;
     background: var(--accent-light);
     border: 1px solid #6ee7b7;
     border-radius: 4px; padding: 2px 7px;
     font-size: 10px; font-weight: 700; color: var(--accent-dark);
-}
+} */
 
 /* ── Signature ───────────────────────────────────────────── */
 .sig-badge {
