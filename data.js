@@ -2,7 +2,7 @@
  * data.js
  * Qatar Live Weather Map — Location data for all municipalities
  * Each entry: { name (EN), nameAr (AR), lat, lon }
- * by MTAHA
+ * by mohammedlglg
  */
 
 const DATA_POINTS = {

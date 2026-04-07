@@ -1,7 +1,7 @@
-# Qatar Live Weather Map — wttr.in Edition
+# Qatar Live Weather Map
 
 > **Real-time interactive weather map for Qatar powered exclusively by [wttr.in](https://wttr.in)**
-> *by [MTAHA](https://github.com/MTAHA)*
+> *by [mohammedlglg](https://github.com/mohammedlglg)*
 
 ---
 
@@ -52,7 +52,7 @@ python3 -m http.server 8080
 Same process as the main version:
 1. Push to a GitHub repo
 2. Settings → Pages → main branch / root
-3. Live at `https://mohammedlglg-cgis.github.io/qatar-live-weather/`
+3. Live at `https://mohammedlglg.github.io/qatar-live-weather/`
 
 ## 📡 wttr.in API
 
@@ -71,5 +71,5 @@ Emerald green (`#059669`) throughout — distinct from the purple multi-source v
 ---
 
 <div align="center">
-  <sub>Built with ☁️ &nbsp;·&nbsp; Powered by <a href="https://wttr.in">wttr.in</a> &nbsp;·&nbsp; by <strong>MTAHA</strong></sub>
+  <sub>Built with ☁️ &nbsp;·&nbsp; Powered by <a href="https://wttr.in">wttr.in</a> &nbsp;·&nbsp; by <strong>mohammedlglg</strong></sub>
 </div>

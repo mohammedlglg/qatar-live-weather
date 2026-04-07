@@ -1,7 +1,7 @@
 /**
  * app.js
  * Qatar Live Weather Map
- * by MTAHA
+ * by mohammedlglg
  *
  * wttr.in JSON format (format=j1) provides per location:
  *   current_condition[0]  — live readings

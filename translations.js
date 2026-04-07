@@ -1,7 +1,7 @@
 /**
  * translations.js
  * Qatar Live Weather Map i18n strings
- * by MTAHA
+ * by mohammedlglg
  */
 
 const T = {
