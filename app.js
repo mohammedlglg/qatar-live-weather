@@ -289,7 +289,6 @@ function buildPopup(town, reading, factText, isLoadingFacts, regionKey) {
 
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2px;gap:6px">
             <b style="line-height:1.3">${name}</b>
-            <span class="wttr-badge">wttr.in</span>
         </div>
         <div style="font-size:13px;margin-bottom:6px;color:#475569">
             ${d.icon || ''} ${d.condition || ''}
