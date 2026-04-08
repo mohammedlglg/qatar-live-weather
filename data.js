@@ -50,8 +50,7 @@ const DATA_POINTS = {
         { name: "Al Thakhira",          nameAr: "الذخيرة",              lat: 25.7414, lon: 51.4367 },
         { name: "Ras Laffan City",      nameAr: "مدينة رأس لفان",       lat: 25.8917, lon: 51.5500 },
         { name: "Fuwayrit",             nameAr: "فويرط",                lat: 25.8331, lon: 51.4147 },
-        { name: "Al Ghuwariyah",        nameAr: "الغويرية",             lat: 25.7939, lon: 51.4011 },
-        { name: "Umm Slal Ali",         nameAr: "أم صلال علي",          lat: 25.4742, lon: 51.4031 }
+        { name: "Al Ghuwariyah",        nameAr: "الغويرية",             lat: 25.7939, lon: 51.4011 }
     ],
     SHAMAL: [
         { name: "Madinat ash Shamal",   nameAr: "مدينة الشمال",         lat: 26.1131, lon: 51.2131 },
@@ -59,22 +58,23 @@ const DATA_POINTS = {
         { name: "Abu Dhalouf",          nameAr: "أبو ذلوف",             lat: 26.0836, lon: 51.2517 },
         { name: "Al Qa`Abiyah",         nameAr: "الكعبية",              lat: 26.0622, lon: 51.2733 },
         { name: "Az Zubara",            nameAr: "الزبارة",              lat: 25.9736, lon: 51.0353 },
-        { name: "Al Jumail",            nameAr: "الجميل",               lat: 25.9197, lon: 51.1297 },
+        { name: "Al Mebtaeda",          nameAr: "المبتعدة",             lat: 25.9197, lon: 51.1297 },
         { name: "Al Arish",             nameAr: "العريش",               lat: 26.0200, lon: 51.2500 }
     ],
     SHEEHANIYA: [
         { name: "Ash Sheehaniya Town",  nameAr: "مدينة الشحانية",       lat: 25.3500, lon: 51.2333 },
         { name: "Al Shahaniya",         nameAr: "الشحانية",             lat: 25.3567, lon: 51.2289 },
         { name: "Al Samriya",           nameAr: "السمرية",              lat: 25.4167, lon: 51.2167 },
-        { name: "Rawdat Al Hamama",     nameAr: "روضة الحمامة",         lat: 25.4556, lon: 51.2361 },
-        { name: "Wadi Al Banat",        nameAr: "وادي البنات",          lat: 25.3000, lon: 51.1833 }
+        { name: "Al Mearad",            nameAr: "المعراض",              lat: 25.4556, lon: 51.2361 },
+        { name: "Wadi Al Majhoola",     nameAr: "وادي المجهولة",        lat: 25.3000, lon: 51.1833 }
     ],
     DAAYEN: [
         { name: "Umm Slal Mohammed",    nameAr: "أم صلال محمد",         lat: 25.4697, lon: 51.4411 },
-        { name: "Al Kheesa",            nameAr: "الخيسة",               lat: 25.4531, lon: 51.4214 },
+        { name: "Al Kheesa",            nameAr: "الخيسة",              lat: 25.4531, lon: 51.4214 },
         { name: "Al Jelaiah",           nameAr: "الجلاية",              lat: 25.4978, lon: 51.4556 },
-        { name: "Al Froosh",            nameAr: "الفروش",               lat: 25.5225, lon: 51.4736 },
-        { name: "Leabaib",              nameAr: "ليبيب",                lat: 25.5500, lon: 51.4167 }
+        { name: "Al Froosh",            nameAr: "الفروش",              lat: 25.5225, lon: 51.4736 },
+        { name: "Umm Qarn",             nameAr: "أم قرن",              lat: 25.5500, lon: 51.4167 },
+        { name: "Umm Slal Ali",         nameAr: "أم صلال علي",          lat: 25.4742, lon: 51.4031 }
     ]
 };
 
