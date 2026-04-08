@@ -45,7 +45,7 @@ const T = {
             DOHA:       "Doha (Ad Dawhah)",
             RAYYAN:     "Ar Rayyan",
             WAKRAH:     "Al Wakrah",
-            KHOR:       "Al Khor & Az Zubara",
+            KHOR:       "Al Khor & Dhekra",
             SHAMAL:     "Ash Shamal",
             SHEEHANIYA: "Ash Sheehaniya",
             DAAYEN:     "Ad Daayen"
@@ -92,7 +92,7 @@ const T = {
             DOHA:       "الدوحة",
             RAYYAN:     "الريان",
             WAKRAH:     "الوكرة",
-            KHOR:       "الخور والزبارة",
+            KHOR:       "الخور والذخيرة",
             SHAMAL:     "الشمال",
             SHEEHANIYA: "الشحانية",
             DAAYEN:     "الظعاين"
