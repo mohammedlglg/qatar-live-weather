@@ -48,9 +48,7 @@ const DATA_POINTS = {
     KHOR: [
         { name: "Al Khor Town",         nameAr: "مدينة الخور",          lat: 25.6804, lon: 51.4958 },
         { name: "Al Thakhira",          nameAr: "الذخيرة",              lat: 25.7414, lon: 51.4367 },
-        { name: "Az Zubara",            nameAr: "الزبارة",              lat: 25.9736, lon: 51.0353 },
         { name: "Ras Laffan City",      nameAr: "مدينة رأس لفان",       lat: 25.8917, lon: 51.5500 },
-        { name: "Al Jumail",            nameAr: "الجميل",               lat: 25.9197, lon: 51.1297 },
         { name: "Fuwayrit",             nameAr: "فويرط",                lat: 25.8331, lon: 51.4147 },
         { name: "Al Ghuwariyah",        nameAr: "الغويرية",             lat: 25.7939, lon: 51.4011 },
         { name: "Umm Slal Ali",         nameAr: "أم صلال علي",          lat: 25.4742, lon: 51.4031 }
@@ -59,7 +57,9 @@ const DATA_POINTS = {
         { name: "Madinat ash Shamal",   nameAr: "مدينة الشمال",         lat: 26.1131, lon: 51.2131 },
         { name: "Al Ruwais",            nameAr: "الرويس",               lat: 26.1467, lon: 51.2058 },
         { name: "Abu Dhalouf",          nameAr: "أبو ذلوف",             lat: 26.0836, lon: 51.2517 },
-        { name: "Al Qa`Abiyah",         nameAr: "الكعبية",               lat: 26.0622, lon: 51.2733 },
+        { name: "Al Qa`Abiyah",         nameAr: "الكعبية",              lat: 26.0622, lon: 51.2733 },
+        { name: "Az Zubara",            nameAr: "الزبارة",              lat: 25.9736, lon: 51.0353 },
+        { name: "Al Jumail",            nameAr: "الجميل",               lat: 25.9197, lon: 51.1297 },
         { name: "Al Arish",             nameAr: "العريش",               lat: 26.0200, lon: 51.2500 }
     ],
     SHEEHANIYA: [
