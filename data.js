@@ -65,7 +65,7 @@ const DATA_POINTS = {
         { name: "Ash Sheehaniya Town",  nameAr: "مدينة الشحانية",       lat: 25.3500, lon: 51.2333 },
         { name: "Al Shahaniya",         nameAr: "الشحانية",              lat: 25.3567, lon: 51.2289 },
         { name: "Camel Race Track",     nameAr: "مضمار سباق الهجن",    lat: 25.4167, lon: 51.2167 },
-        { name: "Al Mearad",            nameAr: "المعراض",               lat: 25.4556, lon: 51.2361 },
+        { name: "Al Jumayliyah",            nameAr: "الجميلية",               lat: 25.6161, lon: 51.0815 },
         { name: "Wadi Al Majhoola",     nameAr: "وادي المجهولة",         lat: 25.3000, lon: 51.1833 }
     ],
     DAAYEN: [
