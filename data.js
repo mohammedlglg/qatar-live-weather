@@ -25,22 +25,21 @@ const DATA_POINTS = {
     ],
     RAYYAN: [
         { name: "Al Rayyan City",       nameAr: "مدينة الريان",         lat: 25.2583, lon: 51.4297 },
-        { name: "Education City",       nameAr: "المدينة التعليمية",    lat: 25.3134, lon: 51.4392 },
+        { name: "Education City",       nameAr: "المدينة التعليمية",   lat: 25.3134, lon: 51.4392 },
         { name: "Al Waab",              nameAr: "الوعب",                lat: 25.2569, lon: 51.4639 },
-        { name: "Gharrafat Al Rayyan",  nameAr: "غرافة الريان",         lat: 25.2817, lon: 51.4194 },
-        { name: "Muaither",             nameAr: "المعيذر",              lat: 25.2431, lon: 51.4064 },
-        { name: "Al Aziziyah",          nameAr: "العزيزية",             lat: 25.2289, lon: 51.4236 },
-        { name: "Umm Al Amad",          nameAr: "أم العماد",            lat: 25.1978, lon: 51.4006 },
-        { name: "Al Shaqab",            nameAr: "الشقب",                lat: 25.2906, lon: 51.3958 },
-        { name: "Muraikh",              nameAr: "مريخ",                 lat: 25.3236, lon: 51.3858 },
-        { name: "Izghawa",              nameAr: "إزغاوة",               lat: 25.3656, lon: 51.4011 }
+        { name: "Muaither",             nameAr: "معيذر",                lat: 25.243100, lon: 51.406400 },
+        { name: "Al Sailiya",          nameAr: "السيلية",             lat: 25.214302, lon: 51.354788 },
+        { name: "Abu Nakhla",           nameAr: "أبو نخلة",             lat: 25.115060, lon: 51.316209 },
+        { name: "Al Shaqab",            nameAr: "الشقب",                lat: 25.307343, lon: 51.438941 },
+        { name: "Al Wajba",             nameAr: "الوجبة",               lat: 25.312630, lon: 51.377280 },
+        { name: "Al Gharrafa",          nameAr: "الغرافة",              lat: 25.337442, lon: 51.447724 },
+        { name: "Abu Samra",            nameAr: "أبو سمرة",             lat: 24.745054, lon: 50.846933 },
     ],
     WAKRAH: [
         { name: "Al Wakrah City",       nameAr: "مدينة الوكرة",         lat: 25.1694, lon: 51.5983 },
         { name: "Al Wukair",            nameAr: "الوكير",               lat: 25.1614, lon: 51.5178 },
         { name: "Mesaieed",             nameAr: "مسيعيد",               lat: 24.9989, lon: 51.5547 },
         { name: "Sealine Beach",        nameAr: "شاطئ سيلاين",          lat: 24.9200, lon: 51.5800 },
-        { name: "Abu Nakhla",           nameAr: "أبو نخلة",             lat: 25.1283, lon: 51.4678 },
         { name: "Al Mashaf",            nameAr: "المشاف",               lat: 25.1867, lon: 51.5622 },
         { name: "Wholesale Market",     nameAr: "سوق الجملة",           lat: 25.1453, lon: 51.5325 },
         { name: "Ras Laffan South",     nameAr: "رأس لفان الجنوبية",    lat: 25.1000, lon: 51.5500 }
@@ -57,16 +56,17 @@ const DATA_POINTS = {
         { name: "Al Ruwais",            nameAr: "الرويس",               lat: 26.1467, lon: 51.2058 },
         { name: "Abu Dhalouf",          nameAr: "أبو ذلوف",             lat: 26.0836, lon: 51.2517 },
         { name: "Al Qa`Abiyah",         nameAr: "الكعبية",              lat: 26.0622, lon: 51.2733 },
-        { name: "Az Zubara",            nameAr: "الزبارة",              lat: 25.9736, lon: 51.0353 },
-        { name: "Al Mebtaeda",          nameAr: "المبتعدة",             lat: 25.9197, lon: 51.1297 },
-        { name: "Al Arish",             nameAr: "العريش",               lat: 26.0200, lon: 51.2500 }
+        { name: "Al Zubara",            nameAr: "الزبارة",              lat: 25.973990, lon: 51.031428 },
+        { name: "Al Arish",             nameAr: "العريش",               lat: 26.048194, lon: 51.056901 },
+        { name: "Fuwayrit",             nameAr: "فويرط",                lat: 26.024326, lon: 51.373197 }
     ],
     SHEEHANIYA: [
         { name: "Ash Sheehaniya Town",  nameAr: "مدينة الشحانية",       lat: 25.3500, lon: 51.2333 },
-        { name: "Al Shahaniya",         nameAr: "الشحانية",              lat: 25.3567, lon: 51.2289 },
-        { name: "Camel Race Track",     nameAr: "مضمار سباق الهجن",    lat: 25.4167, lon: 51.2167 },
-        { name: "Al Jumayliyah",            nameAr: "الجميلية",               lat: 25.6161, lon: 51.0815 },
-        { name: "Wadi Al Majhoola",     nameAr: "وادي المجهولة",         lat: 25.3000, lon: 51.1833 }
+        { name: "Dukhan",               nameAr: "دخان",                  lat: 25.4275, lon: 50.7828 },
+        { name: "Camel Race Track",     nameAr: "مضمار سباق الهجن",     lat: 25.4167, lon: 51.2167 },
+        { name: "Al Jumayliyah",        nameAr: "الجميلية",             lat: 25.6161, lon: 51.0815 },
+        { name: "Rawdat Rashed",        nameAr: "روضـة راشـد",            lat: 25.237289, lon: 51.204732 },
+        { name: "Umm Bab",              nameAr: "أم بـاب",               lat: 25.2087, lon: 50.8026 }
     ],
     DAAYEN: [
         { name: "Umm Slal Mohammed",    nameAr: "أم صلال محمد",         lat: 25.4697, lon: 51.4411 },
