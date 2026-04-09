@@ -65,7 +65,7 @@ Or use any static file server (VS Code Live Server, `npx serve`, Nginx, etc.).
 
 1. Push the repo to GitHub.
 2. **Settings → Pages → Deploy from branch → main / root**.
-3. Live at `https://<username>.github.io/<repo>/`
+3. Live at `https://mohammedlglg.github.io/qatar-live-weather/`
 
 ---
 
