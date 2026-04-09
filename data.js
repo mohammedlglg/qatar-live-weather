@@ -7,21 +7,20 @@
 
 const DATA_POINTS = {
     DOHA: [
-        { name: "Doha City Centre",     nameAr: "وسط مدينة الدوحة",    lat: 25.2854, lon: 51.5310 },
-        { name: "West Bay",             nameAr: "الخليج الغربي",        lat: 25.3217, lon: 51.5285 },
-        { name: "The Pearl-Qatar",      nameAr: "اللؤلؤة - قطر",        lat: 25.3713, lon: 51.5513 },
-        { name: "Lusail",               nameAr: "لوسيل",                lat: 25.4278, lon: 51.5149 },
-        { name: "Old Doha Port",        nameAr: "ميناء الدوحة القديم",  lat: 25.2919, lon: 51.5500 },
-        { name: "Corniche",             nameAr: "الكورنيش",             lat: 25.3025, lon: 51.5251 },
-        { name: "Hamad Medical City",   nameAr: "مدينة حمد الطبية",     lat: 25.2892, lon: 51.4878 },
-        { name: "Msheireb",             nameAr: "مشيرب",                lat: 25.2834, lon: 51.5269 },
-        { name: "Al Sadd",              nameAr: "السد",                 lat: 25.2730, lon: 51.5219 },
-        { name: "Madinat Khalifa",      nameAr: "مدينة خليفة",          lat: 25.2597, lon: 51.4900 },
-        { name: "Bin Mahmoud",          nameAr: "بن محمود",             lat: 25.2759, lon: 51.5337 },
-        { name: "Fereej Al Amir",       nameAr: "فريج الأمير",          lat: 25.2848, lon: 51.5439 },
-        { name: "Al Dafna",             nameAr: "الدفنة",               lat: 25.3117, lon: 51.5363 },
-        { name: "Al Khulaifat",         nameAr: "الخليفات",             lat: 25.2677, lon: 51.5452 },
-        { name: "Doha Industrial Area", nameAr: "المنطقة الصناعية",     lat: 25.2397, lon: 51.5492 }
+        { name: "Hamad International Airport",      nameAr: "مطار حمد الدولي",                      lat: 25.259477, lon: 51.614324 },
+        { name: "West Bay",                         nameAr: "الخليج الغربي",                        lat: 25.324515, lon: 51.533941 },
+        { name: "The Pearl-Qatar",                  nameAr: "اللؤلؤة - قطر",                        lat: 25.3713, lon: 51.5513 },
+        { name: "Lusail",                           nameAr: "لوسيل",                                 lat: 25.421421, lon: 51.501751 },
+        { name: "Old Doha Port",                    nameAr: "ميناء الدوحة القديم",                  lat: 25.297427, lon: 51.549693 },
+        { name: "Corniche",                         nameAr: "الكورنيش",                             lat: 25.301023, lon: 51.518848 },
+        { name: "Hamad Medical City",               nameAr: "مدينة حمد الطبية",                     lat: 25.293630, lon: 51.503090 },
+        { name: "Msheireb - Downtown",              nameAr: "مشيرب - قلب الدوحة",                   lat: 25.286369, lon: 51.527401 },
+        { name: "Al Sadd",                          nameAr: "السد",                                  lat: 25.280699, lon: 51.498365 },
+        { name: "Madinat Khalifa South",            nameAr: "جنوب مدينة الخليفة",                   lat: 25.316274, lon: 51.480802 },
+        { name: "Al Thumama Stadium",               nameAr: "أستاد الثمامة",                         lat: 25.234515, lon: 51.531729 },
+        { name: "Souq Waqif",                       nameAr: "سوق واقف",                               lat: 25.287905, lon: 51.532883 },
+        { name: "Qatar University",                 nameAr: "جامعة قطر",                             lat: 25.375385, lon: 51.483011 },
+        { name: "Doha Industrial Area",             nameAr: "المنطقة الصناعية",                     lat: 25.186484, lon: 51.437173 }
     ],
     RAYYAN: [
         { name: "Al Rayyan City",       nameAr: "مدينة الريان",         lat: 25.2583, lon: 51.4297 },
