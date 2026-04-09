@@ -2,6 +2,9 @@
  * app.js
  * Qatar Live Weather Map — Application logic
  * Combined: interactive Leaflet map + rich dashboard panel
+ * Enhancements: cache TTL, concurrency limiter, lazy Chart.js, active marker,
+ *   skeleton loader, share URL, geolocation, heat/dust alerts, service worker,
+ *   aria labels, mobile bottom sheet, error markers, refresh button, "near me"
  * by mohammedlglg
  */
 
@@ -10,6 +13,9 @@
 /* ═══════════════════════════════════════════════════════════
    CONSTANTS
    ═══════════════════════════════════════════════════════════ */
+
+const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+const FETCH_CONCURRENCY = 5;       // max parallel wttr.in requests
 
 const BASEMAPS = [
     { key: 'esri_street',  labelEn: 'Street Map',   labelAr: 'خريطة الشوارع', color: '#fde68a',
@@ -62,7 +68,9 @@ let currentBasemapKey = 'esri_street';
 let currentLang       = 'en';
 let currentRegionKey  = 'DOHA';
 let currentUnit       = 'C';
+let activeMarkerEl    = null;  // DOM element of currently selected marker
 
+// Cache with TTL: stores { data, ts }
 const weatherCache = new Map();
 const factsCache   = new Map();
 
@@ -72,6 +80,37 @@ let lastMoon    = '🌙';
 
 let tempChartInst   = null;
 let precipChartInst = null;
+
+// Freshness ticker
+let freshnessInterval = null;
+let lastFetchTime     = null;
+
+/* ═══════════════════════════════════════════════════════════
+   LAZY CHART.JS LOADER
+   ═══════════════════════════════════════════════════════════ */
+
+let chartJsLoaded = false;
+function loadChartJs() {
+    return new Promise((resolve, reject) => {
+        if (window.Chart) { chartJsLoaded = true; return resolve(); }
+        if (chartJsLoaded) return resolve();
+        const s   = document.createElement('script');
+        s.src     = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js';
+        s.onload  = () => { chartJsLoaded = true; resolve(); };
+        s.onerror = () => reject(new Error('Chart.js failed to load'));
+        document.head.appendChild(s);
+    });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SERVICE WORKER REGISTRATION
+   ═══════════════════════════════════════════════════════════ */
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(() => {});
+    });
+}
 
 /* ═══════════════════════════════════════════════════════════
    HELPERS
@@ -89,14 +128,13 @@ function getColor(t) {
 
 function tv(c, f) { return currentUnit === 'C' ? c : f; }
 function tu()     { return currentUnit === 'C' ? '°C' : '°F'; }
-function wIcon(c) { return WTTR_ICONS[c] || '🌡️'; }
 
 function uvLabel(uv) {
-    if (uv <= 2)  return { t: 'Low',      c: 'var(--success)' };
-    if (uv <= 5)  return { t: 'Moderate', c: 'var(--warm)'    };
-    if (uv <= 7)  return { t: 'High',     c: '#f97316'        };
-    if (uv <= 10) return { t: 'Very High',c: 'var(--danger)'  };
-    return                 { t: 'Extreme', c: '#7c3aed'        };
+    if (uv <= 2)  return { t: 'Low',       c: 'var(--success)' };
+    if (uv <= 5)  return { t: 'Moderate',  c: 'var(--warm)'    };
+    if (uv <= 7)  return { t: 'High',      c: '#f97316'        };
+    if (uv <= 10) return { t: 'Very High', c: 'var(--danger)'  };
+    return                 { t: 'Extreme',  c: '#7c3aed'        };
 }
 function windDesc(k)  { if(k<2)return'Calm';if(k<12)return'Light';if(k<20)return'Gentle';if(k<29)return'Moderate';if(k<50)return'Fresh';return'Strong'; }
 function pressDesc(p) { if(p<1000)return'Very low';if(p<1010)return'Below normal';if(p<1020)return'Normal';if(p<1030)return'Above normal';return'High'; }
@@ -143,22 +181,53 @@ function dayLabel(dateStr) {
 function fmtDate(d) { return new Date(d).toLocaleDateString('en', { month:'short', day:'numeric' }); }
 function fmtTime(t) { const h = Math.floor(parseInt(t)/100); return h + ':' + String(parseInt(t)%100).padStart(2,'0'); }
 
+/* Relative freshness: "Updated 3 min ago" */
+function updateFreshnessLabel() {
+    if (!lastFetchTime) return;
+    const mins = Math.floor((Date.now() - lastFetchTime) / 60000);
+    const tr   = T[currentLang];
+    const label = mins < 1
+        ? (currentLang === 'ar' ? 'تم التحديث للتو' : 'Updated just now')
+        : (currentLang === 'ar' ? `تم التحديث منذ ${mins} دقيقة` : `Updated ${mins} min ago`);
+    const el = document.getElementById('collection-time');
+    if (el) el.textContent = label;
+}
+
 /* ═══════════════════════════════════════════════════════════
-   MARKER ICON
-   Uses L.divIcon so the label is immune to Leaflet's RTL
-   tooltip-offset bug.
+   CONCURRENCY-LIMITED FETCH (batch of N at a time)
    ═══════════════════════════════════════════════════════════ */
-function makeTempIcon(temp, color) {
-    const S = 28;
+
+async function fetchInBatches(towns, fn, batchSize = FETCH_CONCURRENCY) {
+    const results = [];
+    for (let i = 0; i < towns.length; i += batchSize) {
+        const batch = towns.slice(i, i + batchSize);
+        const batchResults = await Promise.allSettled(batch.map(fn));
+        results.push(...batchResults);
+    }
+    return results;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MARKER ICON — touch-friendly 44px on mobile, 32px on desktop
+   ═══════════════════════════════════════════════════════════ */
+
+const IS_TOUCH = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+
+function makeTempIcon(temp, color, isActive = false) {
+    const S    = IS_TOUCH ? 44 : 32;
+    const ring = isActive
+        ? `box-shadow:0 0 0 3px #fff,0 0 0 5px ${color};animation:markerPulse 1.5s ease-in-out infinite;`
+        : '';
     return L.divIcon({
         className: '',
         html: `<div style="
             width:${S}px;height:${S}px;border-radius:50%;
             background:${color};border:2px solid #fff;box-sizing:border-box;
             display:flex;align-items:center;justify-content:center;
-            font-size:11px;font-weight:800;color:#fff;
+            font-size:${IS_TOUCH ? 13 : 11}px;font-weight:800;color:#fff;
             text-shadow:0 0 3px rgba(0,0,0,0.85);
-            direction:ltr;unicode-bidi:isolate;cursor:pointer;">${temp}</div>`,
+            direction:ltr;unicode-bidi:isolate;cursor:pointer;
+            transition:box-shadow 0.2s;${ring}">${temp}</div>`,
         iconSize:    [S, S],
         iconAnchor:  [S / 2, S / 2],
         popupAnchor: [0, -(S / 2)]
@@ -166,19 +235,62 @@ function makeTempIcon(temp, color) {
 }
 
 /* ═══════════════════════════════════════════════════════════
+   ALERT BANNER — heat index & dust/sandstorm
+   ═══════════════════════════════════════════════════════════ */
+
+function checkAlerts(reading) {
+    const banner   = document.getElementById('alert-banner');
+    const alertTxt = document.getElementById('alert-text');
+    const alertIco = document.getElementById('alert-icon');
+    if (!banner) return;
+
+    const feelsC = +reading.feelsLike;
+    const vis    = +reading.visibility;
+    const wind   = +reading.windSpd;
+    const isAr   = currentLang === 'ar';
+
+    // Dust/sandstorm: visibility < 2km + wind > 30 km/h
+    if (vis < 2 && wind > 30) {
+        alertIco.textContent = '🌪️';
+        alertTxt.textContent = isAr
+            ? `تحذير عاصفة رملية — الرؤية ${vis} كم، الرياح ${wind} كم/س. تجنب القيادة.`
+            : `Dust/Sandstorm Alert — Visibility ${vis} km, Wind ${wind} km/h. Avoid driving.`;
+        banner.className = 'alert-banner alert-dust';
+        banner.style.display = 'flex';
+        return;
+    }
+
+    // Extreme heat: feels-like > 45°C
+    if (feelsC > 45) {
+        alertIco.textContent = '🔥';
+        alertTxt.textContent = isAr
+            ? `تحذير حرارة شديدة — الحرارة الحسية ${feelsC}°م. تجنب التعرض للشمس.`
+            : `Extreme Heat Alert — Feels like ${feelsC}°C. Avoid outdoor exposure.`;
+        banner.className = 'alert-banner alert-heat';
+        banner.style.display = 'flex';
+        return;
+    }
+
+    banner.style.display = 'none';
+}
+
+/* ═══════════════════════════════════════════════════════════
    FETCH
    ═══════════════════════════════════════════════════════════ */
 
 async function fetchWttr(town) {
-    const key = `${town.lat},${town.lon}`;
-    if (weatherCache.has(key)) return weatherCache.get(key);
+    const key    = `${town.lat},${town.lon}`;
+    const cached = weatherCache.get(key);
+    // Return cached if still fresh
+    if (cached && (Date.now() - cached.ts) < CACHE_TTL) return cached.data;
+
     const res = await fetch(
         `https://wttr.in/${town.lat},${town.lon}?format=j1`,
         { signal: AbortSignal.timeout(12000) }
     );
     if (!res.ok) throw new Error(`wttr HTTP ${res.status}`);
     const data = await res.json();
-    weatherCache.set(key, data);
+    weatherCache.set(key, { data, ts: Date.now() });
     return data;
 }
 
@@ -197,29 +309,29 @@ function parseWttr(data) {
     const w = data.weather?.[0]           || {};
     const a = w.astronomy?.[0]            || {};
     return {
-        temp:       rnd(c.temp_C),       tempF:      rnd(c.temp_F),
-        feelsLike:  rnd(c.FeelsLikeC),   feelsLikeF: rnd(c.FeelsLikeF),
-        humidity:   rnd(c.humidity),
-        windSpd:    rnd(c.windspeedKmph),
-        windDeg:    rnd(c.winddirDegree),
-        windDir16:  c.winddir16Point,
-        pressure:   rnd(c.pressure),
-        uvIndex:    rnd(c.uvIndex),
-        precip:     rnd(c.precipMM),
-        visibility: rnd(c.visibility),
-        cloud:      rnd(c.cloudcover),
+        temp:        rnd(c.temp_C),       tempF:      rnd(c.temp_F),
+        feelsLike:   rnd(c.FeelsLikeC),   feelsLikeF: rnd(c.FeelsLikeF),
+        humidity:    rnd(c.humidity),
+        windSpd:     rnd(c.windspeedKmph),
+        windDeg:     rnd(c.winddirDegree),
+        windDir16:   c.winddir16Point,
+        pressure:    rnd(c.pressure),
+        uvIndex:     rnd(c.uvIndex),
+        precip:      rnd(c.precipMM),
+        visibility:  rnd(c.visibility),
+        cloud:       rnd(c.cloudcover),
         weatherCode: +c.weatherCode,
-        todayMax:   rnd(w.maxtempC),     todayMaxF:  rnd(w.maxtempF),
-        todayMin:   rnd(w.mintempC),     todayMinF:  rnd(w.mintempF),
-        condition:  c.weatherDesc?.[0]?.value || null,
-        icon:       WTTR_ICONS[+c.weatherCode] || '🌡️',
-        sunrise:    a.sunrise  || null,
-        sunset:     a.sunset   || null,
-        moonPhase:  a.moon_phase || null,
-        moonrise:   a.moonrise || null,
-        moonset:    a.moonset  || null,
-        moonIll:    a.moon_illumination || null,
-        sunHour:    w.sunHour  || null,
+        todayMax:    rnd(w.maxtempC),     todayMaxF:  rnd(w.maxtempF),
+        todayMin:    rnd(w.mintempC),     todayMinF:  rnd(w.mintempF),
+        condition:   c.weatherDesc?.[0]?.value || null,
+        icon:        WTTR_ICONS[+c.weatherCode] || '🌡️',
+        sunrise:     a.sunrise  || null,
+        sunset:      a.sunset   || null,
+        moonPhase:   a.moon_phase || null,
+        moonrise:    a.moonrise || null,
+        moonset:     a.moonset  || null,
+        moonIll:     a.moon_illumination || null,
+        sunHour:     w.sunHour  || null,
         forecast: (data.weather || []).map(day => ({
             date:    day.date,
             max:     rnd(day.maxtempC), maxF: rnd(day.maxtempF),
@@ -287,37 +399,154 @@ async function getTownFacts(nameEn, nameAr, region) {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   DASHBOARD RENDER
+   SKELETON LOADER
    ═══════════════════════════════════════════════════════════ */
 
-function renderDashboard(town, reading, moonEmoji, facts, isLoadingFacts, regionKey) {
-    const tr    = T[currentLang];
-    const isRTL = currentLang === 'ar';
-    const name  = isRTL ? town.nameAr : town.name;
-    const rName = tr.regions[regionKey];
-    const d     = reading;
+function showDashboardSkeleton() {
+    document.getElementById('dash-panel').innerHTML = `
+        <div class="skel-hero"></div>
+        <div class="q-grid">
+            <div class="skel-card"></div><div class="skel-card"></div>
+            <div class="skel-card"></div><div class="skel-card"></div>
+        </div>
+        <div class="skel-bar" style="width:40%;height:14px;margin:8px 0"></div>
+        <div class="skel-hourly">
+            ${Array(8).fill('<div class="skel-h"></div>').join('')}
+        </div>
+        <div class="skel-bar" style="width:40%;height:14px;margin:8px 0"></div>
+        <div class="forecast-grid">
+            <div class="skel-card" style="height:140px"></div>
+            <div class="skel-card" style="height:140px"></div>
+            <div class="skel-card" style="height:140px"></div>
+        </div>`;
+}
 
-    const now         = new Date();
-    const currentHour = now.getHours();
-    const hIdx        = Math.min(Math.floor(currentHour / 3), 7);
-    const ch          = d.hourly[hIdx] || d.hourly[0] || {};
-    const dateStr     = now.toLocaleDateString(isRTL ? 'ar' : 'en', {
+/* ═══════════════════════════════════════════════════════════
+   SHARE URL
+   ═══════════════════════════════════════════════════════════ */
+
+function shareLocation(town, regionKey) {
+    const url = new URL(location.href);
+    url.searchParams.set('loc',  town.name);
+    url.searchParams.set('lat',  town.lat);
+    url.searchParams.set('lon',  town.lon);
+    url.searchParams.set('reg',  regionKey);
+    url.searchParams.set('lang', currentLang);
+    const shareData = {
+        title: `${currentLang === 'ar' ? town.nameAr : town.name} — Qatar Weather`,
+        text:  `Live weather in ${town.name}: ${lastReading?.temp}°C`,
+        url:   url.toString()
+    };
+    if (navigator.share) {
+        navigator.share(shareData).catch(() => {});
+    } else {
+        navigator.clipboard?.writeText(url.toString()).then(() => {
+            showToast(currentLang === 'ar' ? 'تم نسخ الرابط!' : 'Link copied!');
+        }).catch(() => {});
+    }
+}
+
+function showToast(msg) {
+    let t = document.getElementById('toast');
+    if (!t) {
+        t = document.createElement('div');
+        t.id = 'toast';
+        t.className = 'toast';
+        document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   GEOLOCATION — "Near Me"
+   ═══════════════════════════════════════════════════════════ */
+
+function nearestTown(lat, lon) {
+    let best = null, bestDist = Infinity;
+    const allTowns = DATA_POINTS.ALL || Object.values(DATA_POINTS).flat();
+    allTowns.forEach(t => {
+        const d = Math.hypot(t.lat - lat, t.lon - lon);
+        if (d < bestDist) { bestDist = d; best = t; }
+    });
+    return best;
+}
+
+function geoLocate() {
+    const btn = document.getElementById('geoBtn');
+    if (!navigator.geolocation) {
+        showToast(currentLang === 'ar' ? 'الموقع غير مدعوم' : 'Geolocation not supported');
+        return;
+    }
+    if (btn) btn.classList.add('spinning');
+    navigator.geolocation.getCurrentPosition(
+        pos => {
+            if (btn) btn.classList.remove('spinning');
+            const { latitude: lat, longitude: lon } = pos.coords;
+            const town = nearestTown(lat, lon);
+            if (!town) return;
+            // Find which region this town belongs to
+            let foundRegion = currentRegionKey;
+            for (const [key, arr] of Object.entries(DATA_POINTS)) {
+                if (key === 'ALL') continue;
+                if (arr.some(t => t.lat === town.lat && t.lon === town.lon)) {
+                    foundRegion = key;
+                    break;
+                }
+            }
+            map.flyTo([town.lat, town.lon], 14, { animate: true, duration: 1.2 });
+            // Load weather for that town
+            fetchWttr(town).then(raw => {
+                const reading = parseWttr(raw);
+                lastTown    = town;
+                lastReading = reading;
+                showDashboardSkeleton();
+                const cachedFacts = factsCache.get(`${town.name}-${T.en.regions[foundRegion]}-${currentLang}`);
+                renderDashboard(town, reading, lastMoon, cachedFacts || T[currentLang].searching, !cachedFacts, foundRegion);
+                if (!cachedFacts) {
+                    Promise.all([
+                        getTownFacts(town.name, town.nameAr, T.en.regions[foundRegion]),
+                        fetchMoon(town)
+                    ]).then(([facts, moon]) => {
+                        lastMoon = moon;
+                        if (lastTown === town) renderDashboard(town, reading, moon, facts, false, foundRegion);
+                    });
+                }
+                checkAlerts(reading);
+                if (window.innerWidth < 1024) {
+                    document.getElementById('dash-panel')
+                        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }).catch(() => {
+                showToast(currentLang === 'ar' ? 'تعذّر جلب البيانات' : 'Could not fetch weather');
+            });
+        },
+        () => {
+            if (btn) btn.classList.remove('spinning');
+            showToast(currentLang === 'ar' ? 'تعذّر تحديد الموقع' : 'Location access denied');
+        },
+        { timeout: 8000 }
+    );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DASHBOARD SUB-RENDERERS
+   ═══════════════════════════════════════════════════════════ */
+
+function renderHero(d, tr, isRTL, name, rName, regionKey, town) {
+    const now     = new Date();
+    const dateStr = now.toLocaleDateString(isRTL ? 'ar' : 'en', {
         weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
     });
-    const uvL = uvLabel(+d.uvIndex);
-
-    let html = '';
-
-    /* ── HERO ── */
-    // In RTL the icon sits inline (via CSS), so we include it inside the top block
-    html += `<div class="hero-card animate-in">
+    return `<div class="hero-card animate-in">
         <div>
             <div class="hero-loc">${rName}, Qatar</div>
             <div class="hero-city">${name}</div>
             <div class="hero-date">${dateStr}</div>
-            ${isRTL ? `<div class="hero-weather-icon">${d.icon}</div>` : ''}
+            ${isRTL ? `<div class="hero-weather-icon" aria-hidden="true">${d.icon}</div>` : ''}
         </div>
-        ${!isRTL ? `<div class="hero-weather-icon">${d.icon}</div>` : ''}
+        ${!isRTL ? `<div class="hero-weather-icon" aria-hidden="true">${d.icon}</div>` : ''}
         <div>
             <div class="hero-temp-row">
                 <span class="hero-temp">${tv(d.temp, d.tempF)}</span>
@@ -327,12 +556,23 @@ function renderDashboard(town, reading, moonEmoji, facts, isLoadingFacts, region
             <div class="hero-feels">${tr.feelsLike}: ${tv(d.feelsLike, d.feelsLikeF)}${tu()}</div>
             <div class="hero-hilo">H: ${tv(d.todayMax, d.todayMaxF)}° &nbsp; L: ${tv(d.todayMin, d.todayMinF)}°</div>
         </div>
+        <button class="share-btn" onclick="shareLocation(lastTown,'${regionKey}')" aria-label="Share this location's weather">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+            </svg>
+            ${isRTL ? 'مشاركة' : 'Share'}
+        </button>
     </div>`;
+}
 
-    /* ── QUICK STATS ── */
-    html += `<div class="q-grid animate-in" style="animation-delay:.05s">
+function renderQuickStats(d, tr) {
+    const uvL = uvLabel(+d.uvIndex);
+    return `<div class="q-grid animate-in" style="animation-delay:.05s">
         <div class="q-card">
-            <div class="q-icon" style="background:var(--warm-light)">☀️</div>
+            <div class="q-icon" style="background:var(--warm-light)" aria-hidden="true">☀️</div>
             <div>
                 <div class="q-label">${tr.uvIndex}</div>
                 <div class="q-val">${d.uvIndex}</div>
@@ -340,7 +580,7 @@ function renderDashboard(town, reading, moonEmoji, facts, isLoadingFacts, region
             </div>
         </div>
         <div class="q-card">
-            <div class="q-icon" style="background:var(--accent-light)">💧</div>
+            <div class="q-icon" style="background:var(--accent-light)" aria-hidden="true">💧</div>
             <div>
                 <div class="q-label">${tr.humidity}</div>
                 <div class="q-val">${d.humidity}%</div>
@@ -348,7 +588,7 @@ function renderDashboard(town, reading, moonEmoji, facts, isLoadingFacts, region
             </div>
         </div>
         <div class="q-card">
-            <div class="q-icon" style="background:var(--info-light)">💨</div>
+            <div class="q-icon" style="background:var(--info-light)" aria-hidden="true">💨</div>
             <div>
                 <div class="q-label">${tr.windSpeed}</div>
                 <div class="q-val">${d.windSpd} <span style="font-size:10px;font-weight:400">km/h</span></div>
@@ -356,7 +596,7 @@ function renderDashboard(town, reading, moonEmoji, facts, isLoadingFacts, region
             </div>
         </div>
         <div class="q-card">
-            <div class="q-icon" style="background:var(--success-light)">🌡️</div>
+            <div class="q-icon" style="background:var(--success-light)" aria-hidden="true">🌡️</div>
             <div>
                 <div class="q-label">${tr.pressure}</div>
                 <div class="q-val">${d.pressure} <span style="font-size:10px;font-weight:400">hPa</span></div>
@@ -364,29 +604,31 @@ function renderDashboard(town, reading, moonEmoji, facts, isLoadingFacts, region
             </div>
         </div>
     </div>`;
+}
 
-    /* ── HOURLY ── */
-    html += `<div class="sec-title animate-in" style="animation-delay:.08s">${tr.hourly}</div>
-    <div class="hourly-scroll animate-in" style="animation-delay:.1s">`;
+function renderHourly(d, hIdx, tr) {
+    let html = `<div class="sec-title animate-in" style="animation-delay:.08s">${tr.hourly}</div>
+    <div class="hourly-scroll animate-in" style="animation-delay:.1s" role="list">`;
     d.hourly.forEach((h, i) => {
         const isNow = (i === hIdx);
-        html += `<div class="h-card${isNow ? ' now' : ''}">
-            <div class="hc-t">${isNow ? 'Now' : fmtTime(h.time)}</div>
-            <div class="hc-i">${h.icon}</div>
+        html += `<div class="h-card${isNow ? ' now' : ''}" role="listitem">
+            <div class="hc-t">${isNow ? (currentLang === 'ar' ? 'الآن' : 'Now') : fmtTime(h.time)}</div>
+            <div class="hc-i" aria-hidden="true">${h.icon}</div>
             <div class="hc-temp">${tv(h.temp, h.tempF)}°</div>
             ${h.rain > 0 ? `<div class="hc-rain">${h.rain}%</div>` : ''}
         </div>`;
     });
-    html += `</div>`;
+    return html + `</div>`;
+}
 
-    /* ── 3-DAY FORECAST ── */
-    html += `<div class="sec-title animate-in" style="animation-delay:.12s">${tr.forecast}</div>
+function renderForecast(d, tr) {
+    let html = `<div class="sec-title animate-in" style="animation-delay:.12s">${tr.forecast}</div>
     <div class="forecast-grid animate-in" style="animation-delay:.14s">`;
     d.forecast.forEach(f => {
         html += `<div class="day-card">
             <div class="dc-day">${dayLabel(f.date)}</div>
             <div class="dc-date">${fmtDate(f.date)}</div>
-            <div class="dc-icon">${f.icon}</div>
+            <div class="dc-icon" aria-hidden="true">${f.icon}</div>
             <div class="dc-desc">${f.desc}</div>
             <div class="dc-temps">
                 <span class="dc-hi">${tv(f.max, f.maxF)}°</span>
@@ -399,47 +641,51 @@ function renderDashboard(town, reading, moonEmoji, facts, isLoadingFacts, region
             </div>
         </div>`;
     });
-    html += `</div>`;
+    return html + `</div>`;
+}
 
-    /* ── CURRENT CONDITIONS ── */
+function renderConditions(d, ch, tr) {
     const vis = +d.visibility;
-    html += `<div class="sec-title animate-in" style="animation-delay:.16s">${tr.conditions}</div>
+    return `<div class="sec-title animate-in" style="animation-delay:.16s">${tr.conditions}</div>
     <div class="details-grid animate-in" style="animation-delay:.18s">
         <div class="d-card">
-            <div class="d-head"><span class="d-icon">👁️</span><span class="d-title">${tr.visibility}</span></div>
+            <div class="d-head"><span class="d-icon" aria-hidden="true">👁️</span><span class="d-title">${tr.visibility}</span></div>
             <div class="d-val">${vis} <span class="d-unit">km</span></div>
             <div class="d-sub">${visDesc(vis)}</div>
-            <div class="d-bar"><div class="d-bar-fill" style="width:${Math.min(vis/20*100,100)}%;background:var(--accent)"></div></div>
+            <div class="d-bar" role="meter" aria-valuenow="${vis}" aria-valuemin="0" aria-valuemax="20">
+                <div class="d-bar-fill" style="width:${Math.min(vis/20*100,100)}%;background:var(--accent)"></div>
+            </div>
         </div>
         <div class="d-card">
-            <div class="d-head"><span class="d-icon">☁️</span><span class="d-title">${tr.cloud}</span></div>
+            <div class="d-head"><span class="d-icon" aria-hidden="true">☁️</span><span class="d-title">${tr.cloud}</span></div>
             <div class="d-val">${d.cloud}<span class="d-unit">%</span></div>
             <div class="d-sub">${+d.cloud<25?'Mostly clear':+d.cloud<50?'Partly cloudy':+d.cloud<75?'Mostly cloudy':'Overcast'}</div>
             <div class="d-bar"><div class="d-bar-fill" style="width:${d.cloud}%;background:#94a3b8"></div></div>
         </div>
         <div class="d-card">
-            <div class="d-head"><span class="d-icon">🌧️</span><span class="d-title">${tr.precip}</span></div>
+            <div class="d-head"><span class="d-icon" aria-hidden="true">🌧️</span><span class="d-title">${tr.precip}</span></div>
             <div class="d-val">${d.precip} <span class="d-unit">mm</span></div>
             <div class="d-sub">${+d.precip === 0 ? 'No precipitation' : 'Active precip.'}</div>
         </div>
         ${ch.DewPointC != null ? `<div class="d-card">
-            <div class="d-head"><span class="d-icon">💦</span><span class="d-title">Dew Point</span></div>
+            <div class="d-head"><span class="d-icon" aria-hidden="true">💦</span><span class="d-title">Dew Point</span></div>
             <div class="d-val">${tv(ch.DewPointC, ch.DewPointF)}<span class="d-unit">${tu()}</span></div>
             <div class="d-sub">${+ch.DewPointC > 20 ? 'Muggy' : 'Comfortable'}</div>
         </div>` : ''}
         ${ch.HeatIndexC != null ? `<div class="d-card">
-            <div class="d-head"><span class="d-icon">🔥</span><span class="d-title">Heat Index</span></div>
+            <div class="d-head"><span class="d-icon" aria-hidden="true">🔥</span><span class="d-title">Heat Index</span></div>
             <div class="d-val">${tv(ch.HeatIndexC, ch.HeatIndexF)}<span class="d-unit">${tu()}</span></div>
             <div class="d-sub">Wind chill: ${tv(ch.WindChillC, ch.WindChillF)}${tu()}</div>
         </div>` : ''}
         ${ch.WindGustKmph != null ? `<div class="d-card">
-            <div class="d-head"><span class="d-icon">🌬️</span><span class="d-title">Wind Gust</span></div>
+            <div class="d-head"><span class="d-icon" aria-hidden="true">🌬️</span><span class="d-title">Wind Gust</span></div>
             <div class="d-val">${ch.WindGustKmph} <span class="d-unit">km/h</span></div>
             <div class="d-sub">Dir: ${d.windDir16} (${d.windDeg}°)</div>
         </div>` : ''}
     </div>`;
+}
 
-    /* ── PROBABILITY ── */
+function renderProbability(ch, tr) {
     const probs = [
         { i:'🌧️', l:'Rain',     v: ch.chanceofrain     || 0, c:'var(--accent)' },
         { i:'☀️',  l:'Sunshine', v: ch.chanceofsunshine || 0, c:'var(--warm)'   },
@@ -451,41 +697,42 @@ function renderDashboard(town, reading, moonEmoji, facts, isLoadingFacts, region
         { i:'❄️',  l:'Snow',     v: ch.chanceofsnow     || 0, c:'var(--info)'   },
         { i:'🥶',  l:'Frost',    v: 0,                        c:'#06b6d4'       }
     ];
-    html += `<div class="sec-title animate-in" style="animation-delay:.2s">${tr.probability}</div>
+    let html = `<div class="sec-title animate-in" style="animation-delay:.2s">${tr.probability}</div>
     <div class="prob-grid animate-in" style="animation-delay:.22s">`;
     probs.forEach(p => {
         html += `<div class="d-card">
-            <div class="d-head"><span class="d-icon">${p.i}</span><span class="d-title">${p.l}</span></div>
+            <div class="d-head"><span class="d-icon" aria-hidden="true">${p.i}</span><span class="d-title">${p.l}</span></div>
             <div class="d-val">${p.v}<span class="d-unit">%</span></div>
             <div class="d-bar"><div class="d-bar-fill" style="width:${p.v}%;background:${p.c}"></div></div>
         </div>`;
     });
-    html += `</div>`;
+    return html + `</div>`;
+}
 
-    /* ── SUN & MOON ── */
-    html += `<div class="sec-title animate-in" style="animation-delay:.24s">${tr.sunMoon}</div>
+function renderAstro(d, moonEmoji, tr) {
+    let html = `<div class="sec-title animate-in" style="animation-delay:.24s">${tr.sunMoon}</div>
     <div class="astro-row animate-in" style="animation-delay:.26s">`;
 
     if (d.sunrise || d.sunset) {
         html += `<div class="sun-card">
             <div class="sun-row">
                 <div class="sun-item">
-                    <div class="si-icon">🌅</div>
+                    <div class="si-icon" aria-hidden="true">🌅</div>
                     <div class="si-label">${tr.sunrise}</div>
                     <div class="si-time">${d.sunrise || '—'}</div>
                 </div>
                 ${d.sunHour ? `<div class="sun-item">
-                    <div class="si-icon">☀️</div>
+                    <div class="si-icon" aria-hidden="true">☀️</div>
                     <div class="si-label">Sun Hours</div>
                     <div class="si-time">${d.sunHour}h</div>
                 </div>` : ''}
                 <div class="sun-item">
-                    <div class="si-icon">🌇</div>
+                    <div class="si-icon" aria-hidden="true">🌇</div>
                     <div class="si-label">${tr.sunset}</div>
                     <div class="si-time">${d.sunset || '—'}</div>
                 </div>
             </div>
-            <div class="sun-arc">
+            <div class="sun-arc" aria-hidden="true">
                 <svg viewBox="0 0 300 90">
                     <defs><linearGradient id="sg" x1="0" y1="0" x2="1" y2="0">
                         <stop offset="0%"   stop-color="#f59e0b" stop-opacity=".35"/>
@@ -502,7 +749,7 @@ function renderDashboard(town, reading, moonEmoji, facts, isLoadingFacts, region
     }
 
     html += `<div class="moon-card">
-        <div class="moon-emoji">${moonEmoji || '🌙'}</div>
+        <div class="moon-emoji" aria-label="${MOON_PHASES[moonEmoji] || 'Moon phase'}">${moonEmoji || '🌙'}</div>
         <div>
             <div class="mi-phase">${MOON_PHASES[moonEmoji] || d.moonPhase || 'Unknown'}</div>
             ${d.moonrise ? `<div class="mi-det">🌙 Rise: ${d.moonrise}</div>` : ''}
@@ -510,21 +757,22 @@ function renderDashboard(town, reading, moonEmoji, facts, isLoadingFacts, region
             ${d.moonIll  ? `<div class="mi-det">💡 ${d.moonIll}% illuminated</div>` : ''}
         </div>
     </div>`;
-    html += `</div>`;
+    return html + `</div>`;
+}
 
-    /* ── CHARTS ── */
-    html += `<div class="sec-title animate-in" style="animation-delay:.28s">${tr.tempTrend}</div>
+function renderChartSection(d, tr) {
+    return `<div class="sec-title animate-in" style="animation-delay:.28s">${tr.tempTrend}</div>
     <div class="chart-card animate-in" style="animation-delay:.3s">
-        <div style="position:relative;height:200px"><canvas id="tempChart"></canvas></div>
+        <div style="position:relative;height:200px"><canvas id="tempChart" aria-label="Temperature trend chart"></canvas></div>
     </div>
     <div class="two-col animate-in" style="animation-delay:.32s">
         <div class="chart-card">
             <div class="chart-title">${tr.precipTrend}</div>
-            <div style="position:relative;height:170px"><canvas id="precipChart"></canvas></div>
+            <div style="position:relative;height:170px"><canvas id="precipChart" aria-label="Rain chance chart"></canvas></div>
         </div>
         <div class="wind-card">
             <div class="chart-title">${tr.windDir}</div>
-            <svg viewBox="0 0 200 200">
+            <svg viewBox="0 0 200 200" role="img" aria-label="Wind direction compass: ${d.windDir16} at ${d.windSpd} km/h">
                 <circle cx="100" cy="100" r="82" fill="none" stroke="var(--border)" stroke-width=".5"/>
                 <circle cx="100" cy="100" r="58" fill="none" stroke="var(--border)" stroke-width=".5" stroke-dasharray="3,3"/>
                 <circle cx="100" cy="100" r="34" fill="none" stroke="var(--border)" stroke-width=".5" stroke-dasharray="2,3"/>
@@ -542,9 +790,10 @@ function renderDashboard(town, reading, moonEmoji, facts, isLoadingFacts, region
             <div style="font-size:11px;color:var(--txt2)">${d.windDeg}° bearing</div>
         </div>
     </div>`;
+}
 
-    /* ── QUICK FACTS ── */
-    html += `<div class="sec-title animate-in" style="animation-delay:.34s">${tr.quickFacts}</div>
+function renderFacts(facts, isLoadingFacts, isRTL, tr) {
+    return `<div class="sec-title animate-in" style="animation-delay:.34s">${tr.quickFacts}</div>
     <div class="chart-card animate-in" style="animation-delay:.36s">
         <div style="font-size:11px;color:var(--txt3);margin-bottom:6px;font-style:italic">${tr.wikiSource}</div>
         <p id="facts-para"
@@ -553,66 +802,97 @@ function renderDashboard(town, reading, moonEmoji, facts, isLoadingFacts, region
                   padding-${isRTL ? 'right' : 'left'}:10px;"
            class="${isLoadingFacts ? 'loading-pulse' : ''}">${facts}</p>
     </div>`;
+}
 
-    /* Write to DOM */
+/* ═══════════════════════════════════════════════════════════
+   MAIN DASHBOARD RENDERER
+   ═══════════════════════════════════════════════════════════ */
+
+function renderDashboard(town, reading, moonEmoji, facts, isLoadingFacts, regionKey) {
+    const tr    = T[currentLang];
+    const isRTL = currentLang === 'ar';
+    const name  = isRTL ? town.nameAr : town.name;
+    const rName = tr.regions[regionKey];
+    const d     = reading;
+
+    const now         = new Date();
+    const currentHour = now.getHours();
+    const hIdx        = Math.min(Math.floor(currentHour / 3), 7);
+    const ch          = d.hourly[hIdx] || d.hourly[0] || {};
+
+    const html =
+        renderHero(d, tr, isRTL, name, rName, regionKey, town) +
+        renderQuickStats(d, tr) +
+        renderHourly(d, hIdx, tr) +
+        renderForecast(d, tr) +
+        renderConditions(d, ch, tr) +
+        renderProbability(ch, tr) +
+        renderAstro(d, moonEmoji, tr) +
+        renderChartSection(d, tr) +
+        renderFacts(facts, isLoadingFacts, isRTL, tr);
+
     document.getElementById('dash-panel').innerHTML = html;
 
-    /* ── CHARTS: render after DOM is ready ── */
-    setTimeout(() => {
-        const isDark     = document.documentElement.getAttribute('data-theme') === 'dark';
-        const gridColor  = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)';
-        const tickColor  = isDark ? '#94a3b8' : '#64748b';
+    // Draw charts after DOM is ready (lazy load Chart.js first)
+    loadChartJs().then(() => {
+        setTimeout(() => drawCharts(d), 80);
+    });
+}
 
-        if (tempChartInst)   tempChartInst.destroy();
-        if (precipChartInst) precipChartInst.destroy();
+function drawCharts(d) {
+    const isDark    = document.documentElement.getAttribute('data-theme') === 'dark';
+    const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)';
+    const tickColor = isDark ? '#94a3b8' : '#64748b';
 
-        const tc = document.getElementById('tempChart');
-        if (tc) {
-            tempChartInst = new Chart(tc, {
-                type: 'line',
-                data: {
-                    labels:   d.hourly.map(x => fmtTime(x.time)),
-                    datasets: [
-                        { label: 'Temp',       data: d.hourly.map(x => tv(x.temp,   x.tempF)),
-                          borderColor: 'var(--accent)', backgroundColor: 'rgba(5,150,105,0.08)',
-                          fill: true, tension: .4, pointRadius: 3, pointBackgroundColor: 'var(--accent)', borderWidth: 2 },
-                        { label: 'Feels like', data: d.hourly.map(x => tv(x.feelsC, x.feelsF)),
-                          borderColor: 'var(--warm)',   backgroundColor: 'transparent',
-                          borderDash: [5,4], tension: .4, pointRadius: 2, pointBackgroundColor: 'var(--warm)', borderWidth: 1.5 }
-                    ]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: true, position: 'bottom',
-                        labels: { usePointStyle: true, pointStyle: 'circle', boxWidth: 6, font: { size: 10 }, color: tickColor } } },
-                    scales: {
-                        x: { grid: { display: false }, ticks: { font: { size: 9 }, color: tickColor, maxRotation: 0 } },
-                        y: { grid: { color: gridColor }, ticks: { font: { size: 9 }, color: tickColor, callback: v => v + '°' } }
-                    }
+    if (tempChartInst)   { tempChartInst.destroy();   tempChartInst   = null; }
+    if (precipChartInst) { precipChartInst.destroy(); precipChartInst = null; }
+
+    const tc = document.getElementById('tempChart');
+    if (tc && window.Chart) {
+        tempChartInst = new Chart(tc, {
+            type: 'line',
+            data: {
+                labels:   d.hourly.map(x => fmtTime(x.time)),
+                datasets: [
+                    { label: 'Temp',       data: d.hourly.map(x => tv(x.temp,   x.tempF)),
+                      borderColor: 'var(--accent)', backgroundColor: 'rgba(5,150,105,0.08)',
+                      fill: true, tension: .4, pointRadius: 3, pointBackgroundColor: 'var(--accent)', borderWidth: 2 },
+                    { label: 'Feels like', data: d.hourly.map(x => tv(x.feelsC, x.feelsF)),
+                      borderColor: 'var(--warm)',   backgroundColor: 'transparent',
+                      borderDash: [5,4], tension: .4, pointRadius: 2, pointBackgroundColor: 'var(--warm)', borderWidth: 1.5 }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: true, position: 'bottom',
+                    labels: { usePointStyle: true, pointStyle: 'circle', boxWidth: 6, font: { size: 10 }, color: tickColor } } },
+                scales: {
+                    x: { grid: { display: false }, ticks: { font: { size: 9 }, color: tickColor, maxRotation: 0 } },
+                    y: { grid: { color: gridColor }, ticks: { font: { size: 9 }, color: tickColor, callback: v => v + '°' } }
                 }
-            });
-        }
+            }
+        });
+    }
 
-        const pc = document.getElementById('precipChart');
-        if (pc) {
-            precipChartInst = new Chart(pc, {
-                type: 'bar',
-                data: {
-                    labels:   d.hourly.map(x => fmtTime(x.time)),
-                    datasets: [{ label: 'Rain %', data: d.hourly.map(x => +x.chanceofrain),
-                        backgroundColor: 'rgba(5,150,105,0.45)', borderRadius: 4, borderSkipped: false }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { grid: { display: false }, ticks: { font: { size: 9 }, color: tickColor, maxRotation: 0 } },
-                        y: { grid: { color: gridColor }, max: 100, ticks: { font: { size: 9 }, color: tickColor, callback: v => v + '%' } }
-                    }
+    const pc = document.getElementById('precipChart');
+    if (pc && window.Chart) {
+        precipChartInst = new Chart(pc, {
+            type: 'bar',
+            data: {
+                labels:   d.hourly.map(x => fmtTime(x.time)),
+                datasets: [{ label: 'Rain %', data: d.hourly.map(x => +x.chanceofrain),
+                    backgroundColor: 'rgba(5,150,105,0.45)', borderRadius: 4, borderSkipped: false }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false }, ticks: { font: { size: 9 }, color: tickColor, maxRotation: 0 } },
+                    y: { grid: { color: gridColor }, max: 100, ticks: { font: { size: 9 }, color: tickColor, callback: v => v + '%' } }
                 }
-            });
-        }
-    }, 80);
+            }
+        });
+    }
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -641,26 +921,43 @@ function buildBasemapControl() {
             L.DomEvent.disableClickPropagation(wrap);
             L.DomEvent.disableScrollPropagation(wrap);
             wrap.innerHTML = `
-                <button class="basemap-btn" onclick="toggleBasemapDropdown(event)"
-                        title="${isAr ? 'خريطة الأساس' : 'Switch basemap'}">
+                <button class="basemap-btn" id="basemap-toggle-btn"
+                        title="${isAr ? 'خريطة الأساس' : 'Switch basemap'}"
+                        aria-haspopup="listbox" aria-expanded="false">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                         stroke-linecap="round" stroke-linejoin="round">
+                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <polygon points="12 2 2 7 12 12 22 7 12 2"/>
                         <polyline points="2 17 12 22 22 17"/>
                         <polyline points="2 12 12 17 22 12"/>
                     </svg>
                 </button>
-                <div class="basemap-dropdown" id="basemap-dropdown">
+                <div class="basemap-dropdown" id="basemap-dropdown" role="listbox">
                     <div class="basemap-dropdown-header">${isAr ? 'خريطة الأساس' : 'Basemap'}</div>
                     <ul class="basemap-dropdown-list">
                         ${BASEMAPS.map(bm => `
                         <li data-key="${bm.key}" class="${bm.key === currentBasemapKey ? 'active' : ''}"
-                            onclick="switchBasemap('${bm.key}');closeBasemapDropdown()">
+                            role="option" aria-selected="${bm.key === currentBasemapKey}">
                             <span class="basemap-swatch" style="background:${bm.color}"></span>
                             ${isAr ? (bm.labelAr || bm.labelEn) : bm.labelEn}
                         </li>`).join('')}
                     </ul>
                 </div>`;
+
+            // Wire up events without inline onclick
+            wrap.querySelector('#basemap-toggle-btn').addEventListener('click', e => {
+                e.stopPropagation();
+                const dd  = wrap.querySelector('#basemap-dropdown');
+                const btn = wrap.querySelector('#basemap-toggle-btn');
+                const open = dd.classList.toggle('open');
+                btn.setAttribute('aria-expanded', open);
+            });
+            wrap.querySelectorAll('.basemap-dropdown-list li').forEach(li => {
+                li.addEventListener('click', () => {
+                    switchBasemap(li.dataset.key);
+                    wrap.querySelector('#basemap-dropdown').classList.remove('open');
+                    wrap.querySelector('#basemap-toggle-btn').setAttribute('aria-expanded', 'false');
+                });
+            });
             return wrap;
         }
     });
@@ -668,19 +965,14 @@ function buildBasemapControl() {
     basemapControl.addTo(map);
 }
 
-function toggleBasemapDropdown(e) {
-    e.stopPropagation();
-    document.getElementById('basemap-dropdown')?.classList.toggle('open');
-}
-function closeBasemapDropdown() {
-    document.getElementById('basemap-dropdown')?.classList.remove('open');
-}
 document.addEventListener('click', e => {
-    if (!e.target.closest('.leaflet-basemap-wrap')) closeBasemapDropdown();
+    if (!e.target.closest('.leaflet-basemap-wrap')) {
+        document.querySelectorAll('.basemap-dropdown.open').forEach(d => d.classList.remove('open'));
+    }
 });
 
 /* ═══════════════════════════════════════════════════════════
-   LEGEND (Leaflet bottom-left control)
+   LEGEND
    ═══════════════════════════════════════════════════════════ */
 
 function buildLegend() {
@@ -689,6 +981,7 @@ function buildLegend() {
         options: { position: 'bottomleft' },
         onAdd() {
             const div = L.DomUtil.create('div', 'map-legend');
+            div.setAttribute('aria-label', 'Temperature colour legend');
             const t   = T[currentLang].tempLegend;
             div.innerHTML = `<div class="l-title">${t}</div>` +
                 [[41,'> 40°'],[36,'36–40°'],[31,'31–35°'],[26,'26–30°'],[0,'< 26°']].map(([v, lbl]) =>
@@ -704,19 +997,24 @@ function buildLegend() {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   REGION SELECT
+   REGION SELECT (desktop + mobile)
    ═══════════════════════════════════════════════════════════ */
 
 function buildSelect(selectedKey) {
-    const sel = document.getElementById('region-select');
+    const ids = ['region-select', 'region-select-m'];
     const t   = T[currentLang];
-    sel.innerHTML = `<option value="ALL">${t.regions.ALL}</option>
+    const inner = `<option value="ALL">${t.regions.ALL}</option>
         <optgroup label="${t.optgroup}">
             ${['DOHA','RAYYAN','WAKRAH','KHOR','SHAMAL','SHEEHANIYA','DAAYEN']
                 .map(k => `<option value="${k}"${k === selectedKey ? ' selected' : ''}>${t.regions[k]}</option>`)
                 .join('')}
         </optgroup>`;
-    if (selectedKey === 'ALL') sel.value = 'ALL';
+    ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.innerHTML = inner;
+        if (selectedKey === 'ALL') el.value = 'ALL';
+    });
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -732,22 +1030,24 @@ function setLang(lang) {
 
     const t = T[lang];
     document.title = t.pageTitle;
-    document.getElementById('nav-title').textContent      = t.navTitle;
-    document.getElementById('region-label').textContent   = t.regionLabel;
-    document.getElementById('hint-txt') && (document.getElementById('hint-txt').textContent = t.hintTxt);
-    document.getElementById('hint-sub') && (document.getElementById('hint-sub').textContent = t.hintSub);
+    document.getElementById('nav-title').textContent    = t.navTitle;
+    document.getElementById('region-label').textContent = t.regionLabel;
+    const rlm = document.getElementById('region-label-m');
+    if (rlm) rlm.textContent = t.regionLabel;
+    const ht = document.getElementById('hint-txt');
+    const hs = document.getElementById('hint-sub');
+    if (ht) ht.textContent = t.hintTxt;
+    if (hs) hs.textContent = t.hintSub;
+
+    document.getElementById('btn-en').setAttribute('aria-pressed', lang === 'en');
+    document.getElementById('btn-ar').setAttribute('aria-pressed', lang === 'ar');
 
     const key = document.getElementById('region-select').value;
-    document.getElementById('collection-time').textContent = t.updated(getQatarTime());
-
     buildSelect(key);
     buildLegend();
     if (map) buildBasemapControl();
+    updateFreshnessLabel();
 
-    document.getElementById('btn-en').classList.toggle('active', lang === 'en');
-    document.getElementById('btn-ar').classList.toggle('active', lang === 'ar');
-
-    // Re-render dashboard in new language if a location is active
     if (lastTown && lastReading) {
         const cachedFacts = factsCache.get(`${lastTown.name}-${T.en.regions[currentRegionKey]}-${lang}`);
         renderDashboard(lastTown, lastReading, lastMoon, cachedFacts || t.searching, !cachedFacts, currentRegionKey);
@@ -760,7 +1060,7 @@ function setLang(lang) {
     } else {
         document.getElementById('dash-panel').innerHTML = `
             <div class="hero-empty">
-                <div style="font-size:36px">🗺️</div>
+                <div style="font-size:36px" aria-hidden="true">🗺️</div>
                 <div class="hint-txt">${t.hintTxt}</div>
                 <div class="hint-sub">${t.hintSub}</div>
             </div>`;
@@ -768,13 +1068,18 @@ function setLang(lang) {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   UNIT TOGGLE
+   UNIT TOGGLE (syncs desktop + mobile buttons)
    ═══════════════════════════════════════════════════════════ */
 
 function setUnit(u) {
     currentUnit = u;
-    document.getElementById('btnC').classList.toggle('active', u === 'C');
-    document.getElementById('btnF').classList.toggle('active', u === 'F');
+    ['btnC','btnF','btnCm','btnFm'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (!btn) return;
+        const isActive = (id.startsWith('btnC') && u === 'C') || (id.startsWith('btnF') && u === 'F');
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-pressed', isActive);
+    });
     if (lastTown && lastReading) {
         const cachedFacts = factsCache.get(`${lastTown.name}-${T.en.regions[currentRegionKey]}-${currentLang}`);
         renderDashboard(lastTown, lastReading, lastMoon, cachedFacts || '', false, currentRegionKey);
@@ -789,8 +1094,11 @@ function toggleTheme() {
     const d      = document.documentElement;
     const isDark = d.getAttribute('data-theme') === 'dark';
     d.setAttribute('data-theme', isDark ? '' : 'dark');
-    document.getElementById('themeBtn').textContent = isDark ? '🌙' : '☀️';
-    // Re-render charts in new theme if active
+    const btn = document.getElementById('themeBtn');
+    if (btn) {
+        btn.textContent = isDark ? '🌙' : '☀️';
+        btn.focus();   // preserve keyboard focus
+    }
     if (lastTown && lastReading) {
         const cachedFacts = factsCache.get(`${lastTown.name}-${T.en.regions[currentRegionKey]}-${currentLang}`);
         renderDashboard(lastTown, lastReading, lastMoon, cachedFacts || '', false, currentRegionKey);
@@ -802,12 +1110,20 @@ function toggleTheme() {
    ═══════════════════════════════════════════════════════════ */
 
 function initMap() {
-    map          = L.map('map').setView([25.2854, 51.5310], 12);
+    map          = L.map('map', { zoomControl: true }).setView([25.2854, 51.5310], 12);
     markersLayer = L.layerGroup().addTo(map);
     switchBasemap('esri_street');
     buildLegend();
     buildBasemapControl();
-    document.getElementById('region-select').addEventListener('change', e => updateView(e.target.value));
+
+    document.getElementById('region-select').addEventListener('change', e => {
+        updateView(e.target.value);
+    });
+    const rsm = document.getElementById('region-select-m');
+    if (rsm) rsm.addEventListener('change', e => {
+        document.getElementById('region-select').value = e.target.value;
+        updateView(e.target.value);
+    });
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -830,13 +1146,16 @@ async function updateView(regionKey, isInitial = false) {
     const lText   = document.getElementById('loading-text');
     const lProg   = document.getElementById('loading-progress');
     const lBar    = document.getElementById('loading-bar-fill');
+    const lBarWrap= document.getElementById('loading-bar');
 
     lText.textContent = tr.fetching;
     loading.style.display = 'flex';
     lProg.textContent = `0 / ${towns.length}`;
     lBar.style.width  = '0%';
+    if (lBarWrap) lBarWrap.setAttribute('aria-valuenow', '0');
 
     markersLayer.clearLayers();
+    activeMarkerEl = null;
 
     const bounds = L.latLngBounds(towns.map(t => [t.lat, t.lon]));
     if (bounds.isValid()) {
@@ -852,13 +1171,16 @@ async function updateView(regionKey, isInitial = false) {
     let done  = 0;
     const total = towns.length;
 
-    await Promise.allSettled(towns.map(town =>
+    // Batched fetching — max FETCH_CONCURRENCY at a time
+    await fetchInBatches(towns, town =>
         fetchWttr(town)
             .then(raw => {
                 const reading = parseWttr(raw);
                 done++;
                 lProg.textContent = `${done} / ${total}`;
-                lBar.style.width  = `${Math.round(done / total * 100)}%`;
+                const pct = Math.round(done / total * 100);
+                lBar.style.width = `${pct}%`;
+                if (lBarWrap) lBarWrap.setAttribute('aria-valuenow', pct);
 
                 const tmpVal = reading.temp ?? 0;
                 const color  = getColor(tmpVal);
@@ -866,22 +1188,51 @@ async function updateView(regionKey, isInitial = false) {
                     icon: makeTempIcon(tmpVal, color)
                 }).addTo(markersLayer);
 
-                // Lightweight popup on the map itself
+                // Accessibility label
+                marker.getElement && setTimeout(() => {
+                    const el = marker.getElement();
+                    if (el) el.setAttribute('aria-label',
+                        `${town.name}: ${reading.temp}°C, ${reading.condition || ''}`);
+                }, 50);
+
+                // Lightweight popup
                 marker.bindPopup(`
                     <div style="min-width:140px;font-size:12px;direction:${currentLang === 'ar' ? 'rtl' : 'ltr'}">
                         <b style="color:var(--accent-dark)">${currentLang === 'ar' ? town.nameAr : town.name}</b><br>
                         ${reading.icon} ${reading.condition || ''}<br>
                         <span style="font-size:14px;font-weight:800">${reading.temp}°C</span>
                         &nbsp; H:${reading.todayMax}° L:${reading.todayMin}°<br>
-                        <span style="font-size:10px;color:#94a3b8">Click for full details →</span>
+                        <span style="font-size:10px;color:#94a3b8">${currentLang === 'ar' ? 'انقر للتفاصيل ←' : 'Click for full details →'}</span>
                     </div>`, { maxWidth: 200 });
 
-                // Click → full dashboard panel
+                // Click → full dashboard
                 marker.on('click', async () => {
+                    // Deactivate previous active marker
+                    if (activeMarkerEl) {
+                        activeMarkerEl.style.boxShadow = '';
+                        activeMarkerEl.style.animation = '';
+                    }
+
+                    // Activate this marker
+                    setTimeout(() => {
+                        const el = marker.getElement()?.querySelector('div');
+                        if (el) {
+                            el.style.boxShadow = `0 0 0 3px #fff, 0 0 0 5px ${color}`;
+                            el.style.animation = 'markerPulse 1.5s ease-in-out infinite';
+                            activeMarkerEl = el;
+                        }
+                    }, 30);
+
                     lastTown    = town;
                     lastReading = reading;
+
+                    // Show skeleton immediately for perceived speed
+                    showDashboardSkeleton();
+
                     const cachedFacts = factsCache.get(`${town.name}-${T.en.regions[regionKey]}-${currentLang}`);
                     renderDashboard(town, reading, lastMoon, cachedFacts || tr.searching, !cachedFacts, regionKey);
+
+                    checkAlerts(reading);
 
                     if (!cachedFacts) {
                         const [facts, moon] = await Promise.all([
@@ -892,39 +1243,91 @@ async function updateView(regionKey, isInitial = false) {
                         if (lastTown === town) {
                             const p = document.getElementById('facts-para');
                             if (p) { p.textContent = facts; p.classList.remove('loading-pulse'); }
-                            // Re-render with moon emoji now available
                             renderDashboard(town, reading, moon, facts, false, regionKey);
                         }
                     }
 
-                    // On mobile, scroll dashboard into view
+                    // Mobile: skip popup, scroll straight to dashboard
                     if (window.innerWidth < 1024) {
+                        marker.closePopup();
                         document.getElementById('dash-panel')
-                            .scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     }
                 });
             })
             .catch(err => {
                 done++;
                 lProg.textContent = `${done} / ${total}`;
-                lBar.style.width  = `${Math.round(done / total * 100)}%`;
+                const pct = Math.round(done / total * 100);
+                lBar.style.width  = `${pct}%`;
+                // Show error marker (⚠)
+                const errMarker = L.marker([town.lat, town.lon], {
+                    icon: L.divIcon({
+                        className: '',
+                        html: `<div title="Failed: ${town.name}" style="
+                            width:${IS_TOUCH ? 40 : 28}px;height:${IS_TOUCH ? 40 : 28}px;
+                            border-radius:50%;background:#94a3b8;border:2px solid #fff;
+                            display:flex;align-items:center;justify-content:center;
+                            font-size:${IS_TOUCH ? 14 : 11}px;cursor:pointer;opacity:0.6">⚠</div>`,
+                        iconSize: [IS_TOUCH ? 40 : 28, IS_TOUCH ? 40 : 28],
+                        iconAnchor: [IS_TOUCH ? 20 : 14, IS_TOUCH ? 20 : 14]
+                    })
+                }).addTo(markersLayer);
+                errMarker.bindPopup(`<div style="font-size:12px">
+                    <b>${town.name}</b><br>
+                    <span style="color:#ef4444">${tr.failed}</span>
+                </div>`);
                 console.warn(`wttr failed for ${town.name}:`, err.message);
             })
-    ));
+    );
 
     loading.style.display = 'none';
-    document.getElementById('collection-time').textContent = tr.updated(getQatarTime());
+    lastFetchTime = Date.now();
+    updateFreshnessLabel();
+
+    // Start freshness ticker
+    if (freshnessInterval) clearInterval(freshnessInterval);
+    freshnessInterval = setInterval(updateFreshnessLabel, 60000);
 }
 
 /* ═══════════════════════════════════════════════════════════
-   BOOT
+   BOOT — wire event listeners, handle URL params
    ═══════════════════════════════════════════════════════════ */
 
 window.onload = () => {
     buildSelect('DOHA');
     initMap();
+
+    // Button event listeners (no inline onclick)
+    document.getElementById('btn-en').addEventListener('click', () => setLang('en'));
+    document.getElementById('btn-ar').addEventListener('click', () => setLang('ar'));
+    document.getElementById('btnC').addEventListener('click',   () => setUnit('C'));
+    document.getElementById('btnF').addEventListener('click',   () => setUnit('F'));
+    document.getElementById('themeBtn').addEventListener('click', toggleTheme);
+    document.getElementById('geoBtn').addEventListener('click',   geoLocate);
+    document.getElementById('refreshBtn').addEventListener('click', () => {
+        weatherCache.clear();
+        updateView(currentRegionKey);
+    });
+    document.getElementById('alert-dismiss').addEventListener('click', () => {
+        document.getElementById('alert-banner').style.display = 'none';
+    });
+
+    const btnCm = document.getElementById('btnCm');
+    const btnFm = document.getElementById('btnFm');
+    if (btnCm) btnCm.addEventListener('click', () => setUnit('C'));
+    if (btnFm) btnFm.addEventListener('click', () => setUnit('F'));
+
+    // Read URL params for deep-linking (e.g. ?lang=ar&reg=KHOR)
+    const params = new URLSearchParams(location.search);
+    if (params.get('lang') === 'ar') setLang('ar');
+    const reg = params.get('reg');
+    const initialRegion = reg && DATA_POINTS[reg] ? reg : 'DOHA';
+    document.getElementById('region-select').value = initialRegion;
+    buildSelect(initialRegion);
+
     setTimeout(() => {
-        try { updateView('DOHA', true); }
+        try { updateView(initialRegion, true); }
         catch (e) {
             console.error('Boot error:', e);
             document.getElementById('loading').style.display = 'none';

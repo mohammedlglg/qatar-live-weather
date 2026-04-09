@@ -12,7 +12,7 @@ const T = {
         mapSubtitle: "Click any marker for detailed forecast",
         updating:    "Updating current conditions...",
         fetching:    "Fetching Live Weather Data...",
-        failed:      "Weather retrieval failed. — try again shortly.",
+        failed:      "Weather retrieval failed — try again shortly.",
         regionLabel: "Region:",
         updated:     (t) => `Updated: ${t} (GMT+3)`,
         hintTxt:     "Click any map marker for detailed weather",
@@ -52,6 +52,20 @@ const T = {
         searching:   "Searching local history...",
         tempLegend:  "Temp (°C)",
         fallback:    (n, r) => `${n} is an important area in ${r}, Qatar.`,
+
+        // Alerts
+        alertHeat:   (t) => `Extreme Heat Alert — Feels like ${t}°C. Avoid outdoor exposure.`,
+        alertDust:   (v, w) => `Dust/Sandstorm Alert — Visibility ${v} km, Wind ${w} km/h. Avoid driving.`,
+
+        // New features
+        shareBtn:    "Share",
+        nearMe:      "Near Me",
+        refresh:     "Refresh",
+        linkCopied:  "Link copied!",
+        locDenied:   "Location access denied",
+        locUnsupported: "Geolocation not supported",
+        updatedAgo:  (m) => `Updated ${m} min ago`,
+        updatedNow:  "Updated just now",
 
         regions: {
             ALL:        "All Qatar",
@@ -113,6 +127,20 @@ const T = {
         searching:   "جارٍ البحث...",
         tempLegend:  "درجة الحرارة",
         fallback:    (n, r) => `${n} منطقة مهمة في ${r}، قطر.`,
+
+        // Alerts
+        alertHeat:   (t) => `تحذير حرارة شديدة — الحرارة الحسية ${t}°م. تجنب التعرض للشمس.`,
+        alertDust:   (v, w) => `تحذير عاصفة رملية — الرؤية ${v} كم، الرياح ${w} كم/س. تجنب القيادة.`,
+
+        // New features
+        shareBtn:    "مشاركة",
+        nearMe:      "قريب مني",
+        refresh:     "تحديث",
+        linkCopied:  "تم نسخ الرابط!",
+        locDenied:   "تعذّر تحديد الموقع",
+        locUnsupported: "الموقع غير مدعوم",
+        updatedAgo:  (m) => `تم التحديث منذ ${m} دقيقة`,
+        updatedNow:  "تم التحديث للتو",
 
         regions: {
             ALL:        "قطر",

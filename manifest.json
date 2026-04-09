@@ -1,0 +1,15 @@
+{
+  "name": "Qatar Live Weather",
+  "short_name": "QatarWeather",
+  "description": "Real-time interactive weather map for Qatar — all municipalities, bilingual EN/AR",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f0f4f8",
+  "theme_color": "#059669",
+  "icons": [
+    { "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ],
+  "categories": ["weather", "utilities"],
+  "lang": "en",
+  "dir": "ltr"
+}

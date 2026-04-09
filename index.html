@@ -5,9 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Live weather conditions in Qatar including temperature, humidity, wind speed, and forecasts for Doha and all regions. Bilingual EN/AR.">
     <meta name="author" content="mohammedlglg">
+    <meta name="theme-color" content="#059669">
     <meta name="google-adsense-account" content="ca-pub-2032436364726427">
 
+    <!-- Open Graph / Social sharing -->
+    <meta property="og:type"        content="website">
+    <meta property="og:title"       content="Qatar Live Weather — Real-Time Doha & All Regions">
+    <meta property="og:description" content="Interactive live weather map for Qatar with temperature, humidity, wind, forecasts and more. Bilingual EN/AR.">
+    <meta property="og:image"       content="https://mohammedlglg.github.io/qatar-live-weather/og-image.png">
+    <meta property="og:url"         content="https://mohammedlglg.github.io/qatar-live-weather/">
+    <meta name="twitter:card"       content="summary_large_image">
+    <meta name="twitter:title"      content="Qatar Live Weather">
+    <meta name="twitter:description" content="Real-time weather map for all Qatar municipalities. EN/AR.">
+    <meta name="twitter:image"      content="https://mohammedlglg.github.io/qatar-live-weather/og-image.png">
+
     <title>Qatar Live Weather | Real-Time Doha Weather Updates | Today Weather | Weather in Qatar Now</title>
+
+    <!-- PWA manifest & favicon -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,9 +31,6 @@
 
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
-    <!-- Chart.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 
     <!-- App Stylesheet -->
     <link rel="stylesheet" href="style.css">
@@ -36,12 +49,20 @@
 </head>
 <body>
 
-    <!-- ── NAVBAR ─────────────────────────────────────────── -->
-    <nav class="navbar">
+    <!-- ── HEAT / DUST ALERT BANNER ──────────────────────────── -->
+    <div id="alert-banner" class="alert-banner" style="display:none" role="alert" aria-live="assertive">
+        <span id="alert-icon">⚠️</span>
+        <span id="alert-text"></span>
+        <button class="alert-dismiss" id="alert-dismiss" aria-label="Dismiss alert">✕</button>
+    </div>
+
+    <!-- ── NAVBAR ─────────────────────────────────────────────────── -->
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
         <div class="nav-inner">
             <div class="nav-brand">
                 <svg class="brand-icon" width="22" height="22" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                     stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                     aria-hidden="true">
                     <path d="M12 2v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="M2 12h2"/>
                     <path d="m4.93 19.07 1.41-1.41"/><path d="M12 20v2"/>
                     <path d="m19.07 19.07-1.41-1.41"/><path d="M22 12h-2"/>
@@ -51,25 +72,46 @@
             </div>
             <div class="nav-actions">
                 <!-- Language pill -->
-                <div class="lang-pill">
-                    <button id="btn-en" class="lang-btn active" onclick="setLang('en')">EN</button>
-                    <button id="btn-ar" class="lang-btn" onclick="setLang('ar')">ع</button>
+                <div class="lang-pill" role="group" aria-label="Language selector">
+                    <button id="btn-en" class="lang-btn active" aria-pressed="true">EN</button>
+                    <button id="btn-ar" class="lang-btn" aria-pressed="false">ع</button>
                 </div>
                 <!-- Region selector -->
                 <div class="region-wrap">
                     <label id="region-label" for="region-select">Region:</label>
-                    <select id="region-select"></select>
+                    <select id="region-select" aria-label="Select region"></select>
                 </div>
                 <!-- Unit toggle -->
-                <button class="icon-btn active" id="btnC" onclick="setUnit('C')">°C</button>
-                <button class="icon-btn" id="btnF" onclick="setUnit('F')">°F</button>
+                <div class="unit-wrap" role="group" aria-label="Temperature unit">
+                    <button class="icon-btn active" id="btnC" aria-pressed="true">°C</button>
+                    <button class="icon-btn" id="btnF" aria-pressed="false">°F</button>
+                </div>
+                <!-- Geolocation -->
+                <button class="icon-btn geo-btn" id="geoBtn" title="Find nearest location" aria-label="Use my location">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3"/>
+                    </svg>
+                </button>
                 <!-- Theme toggle -->
-                <button class="icon-btn" id="themeBtn" onclick="toggleTheme()">🌙</button>
+                <button class="icon-btn" id="themeBtn" aria-label="Toggle dark mode">🌙</button>
             </div>
         </div>
     </nav>
 
-    <!-- ── MAIN LAYOUT ────────────────────────────────────── -->
+    <!-- ── MOBILE BOTTOM CONTROLS BAR ──────────────────────────── -->
+    <div class="mobile-bar" id="mobile-bar" role="toolbar" aria-label="Mobile controls">
+        <div class="region-wrap mobile-region">
+            <label id="region-label-m" for="region-select-m">Region:</label>
+            <select id="region-select-m" aria-label="Select region"></select>
+        </div>
+        <div class="unit-wrap" role="group" aria-label="Temperature unit">
+            <button class="icon-btn active" id="btnCm" aria-pressed="true">°C</button>
+            <button class="icon-btn" id="btnFm" aria-pressed="false">°F</button>
+        </div>
+    </div>
+
+    <!-- ── MAIN LAYOUT ─────────────────────────────────────────── -->
     <div class="app-wrap">
         <div class="split-layout">
 
@@ -77,29 +119,38 @@
             <div class="map-panel">
                 <div style="position:relative;">
                     <!-- Loading overlay -->
-                    <div id="loading" class="loading-overlay">
-                        <div class="spinner"></div>
+                    <div id="loading" class="loading-overlay" role="status" aria-live="polite">
+                        <div class="spinner" aria-hidden="true"></div>
                         <div id="loading-text">Fetching Live Weather Data...</div>
                         <div id="loading-progress" class="loading-progress">0 / 0</div>
-                        <div class="loading-bar-track">
+                        <div class="loading-bar-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="loading-bar">
                             <div id="loading-bar-fill" class="loading-bar-fill" style="width:0%"></div>
                         </div>
                     </div>
-                    <div id="map"></div>
+                    <div id="map" role="application" aria-label="Qatar weather map — click a marker for details"></div>
                 </div>
                 <div class="map-footer">
                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none"
-                         viewBox="0 0 24 24" stroke="currentColor">
+                         viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                         <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
                     </svg>
                     <span id="collection-time">Updating current conditions...</span>
+                    <!-- Refresh button -->
+                    <button class="refresh-btn" id="refreshBtn" title="Refresh weather data" aria-label="Refresh weather data">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                            <path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                            <path d="M8 16H3v5"/>
+                        </svg>
+                    </button>
                 </div>
             </div>
 
             <!-- RIGHT: DASHBOARD PANEL -->
-            <div class="dash-panel" id="dash-panel">
+            <div class="dash-panel" id="dash-panel" aria-live="polite" aria-atomic="false">
                 <div class="hero-empty">
-                    <div style="font-size:36px;">🗺️</div>
+                    <div style="font-size:36px;" aria-hidden="true">🗺️</div>
                     <div class="hint-txt" id="hint-txt">Click any map marker for detailed weather</div>
                     <div class="hint-sub" id="hint-sub">Forecast, hourly chart, astronomy &amp; more</div>
                 </div>
@@ -108,16 +159,16 @@
         </div>
     </div>
 
-    <!-- ── FOOTER ─────────────────────────────────────────── -->
-    <footer class="footer">
+    <!-- ── FOOTER ─────────────────────────────────────────────── -->
+    <footer class="footer" role="contentinfo">
         <span>
             <strong>Data:</strong>
-            <a href="https://wttr.in" target="_blank">wttr.in</a> &amp;
-            <a href="https://wikipedia.org" target="_blank">Wikipedia</a>
+            <a href="https://wttr.in" target="_blank" rel="noopener">wttr.in</a> &amp;
+            <a href="https://wikipedia.org" target="_blank" rel="noopener">Wikipedia</a>
         </span>
         <div class="sig-badge">
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none"
-                 viewBox="0 0 24 24" stroke="currentColor">
+                 viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
             </svg>
@@ -125,7 +176,7 @@
         </div>
     </footer>
 
-    <!-- ── Scripts ────────────────────────────────────────── -->
+    <!-- ── Scripts ─────────────────────────────────────────────── -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="translations.js"></script>
     <script src="data.js"></script>
