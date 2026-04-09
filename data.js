@@ -25,15 +25,15 @@ const DATA_POINTS = {
     ],
     RAYYAN: [
         { name: "Al Rayyan City",       nameAr: "مدينة الريان",         lat: 25.2583, lon: 51.4297 },
-        { name: "Education City",       nameAr: "المدينة التعليمية",   lat: 25.3134, lon: 51.4392 },
+        { name: "Education City",       nameAr: "المدينة التعليمية",    lat: 25.3134, lon: 51.4392 },
         { name: "Al Waab",              nameAr: "الوعب",                lat: 25.2569, lon: 51.4639 },
-        { name: "Muaither",             nameAr: "معيذر",                lat: 25.243100, lon: 51.406400 },
-        { name: "Al Sailiya",          nameAr: "السيلية",             lat: 25.214302, lon: 51.354788 },
-        { name: "Abu Nakhla",           nameAr: "أبو نخلة",             lat: 25.115060, lon: 51.316209 },
-        { name: "Al Shaqab",            nameAr: "الشقب",                lat: 25.307343, lon: 51.438941 },
-        { name: "Al Wajba",             nameAr: "الوجبة",               lat: 25.312630, lon: 51.377280 },
-        { name: "Al Gharrafa",          nameAr: "الغرافة",              lat: 25.337442, lon: 51.447724 },
-        { name: "Abu Samra",            nameAr: "أبو سمرة",             lat: 24.745054, lon: 50.846933 },
+        { name: "Muaither",             nameAr: "معيذر",                lat: 25.2431, lon: 51.4064 },
+        { name: "Al Sailiya",           nameAr: "السيلية",              lat: 25.2143, lon: 51.3548 },
+        { name: "Abu Nakhla",           nameAr: "أبو نخلة",             lat: 25.1151, lon: 51.3162 },
+        { name: "Al Shaqab",            nameAr: "الشقب",                lat: 25.3073, lon: 51.4389 },
+        { name: "Al Wajba",             nameAr: "الوجبة",               lat: 25.3126, lon: 51.3773 },
+        { name: "Al Gharrafa",          nameAr: "الغرافة",              lat: 25.3374, lon: 51.4477 },
+        { name: "Abu Samra",            nameAr: "أبو سمرة",             lat: 24.7451, lon: 50.8469 }
     ],
     WAKRAH: [
         { name: "Al Wakrah City",       nameAr: "مدينة الوكرة",         lat: 25.1694, lon: 51.5983 },
@@ -56,29 +56,29 @@ const DATA_POINTS = {
         { name: "Al Ruwais",            nameAr: "الرويس",               lat: 26.1467, lon: 51.2058 },
         { name: "Abu Dhalouf",          nameAr: "أبو ذلوف",             lat: 26.0836, lon: 51.2517 },
         { name: "Al Qa`Abiyah",         nameAr: "الكعبية",              lat: 26.0622, lon: 51.2733 },
-        { name: "Al Zubara",            nameAr: "الزبارة",              lat: 25.973990, lon: 51.031428 },
-        { name: "Al Arish",             nameAr: "العريش",               lat: 26.048194, lon: 51.056901 },
-        { name: "Fuwayrit",             nameAr: "فويرط",                lat: 26.024326, lon: 51.373197 }
+        { name: "Al Zubara",            nameAr: "الزبارة",              lat: 25.9740, lon: 51.0314 },
+        { name: "Al Arish",             nameAr: "العريش",               lat: 26.0482, lon: 51.0569 },
+        { name: "Fuwayrit",             nameAr: "فويرط",                lat: 26.0243, lon: 51.3732 }
     ],
     SHEEHANIYA: [
         { name: "Ash Sheehaniya Town",  nameAr: "مدينة الشحانية",       lat: 25.3500, lon: 51.2333 },
         { name: "Dukhan",               nameAr: "دخان",                  lat: 25.4275, lon: 50.7828 },
         { name: "Camel Race Track",     nameAr: "مضمار سباق الهجن",     lat: 25.4167, lon: 51.2167 },
         { name: "Al Jumayliyah",        nameAr: "الجميلية",             lat: 25.6161, lon: 51.0815 },
-        { name: "Rawdat Rashed",        nameAr: "روضـة راشـد",            lat: 25.237289, lon: 51.204732 },
-        { name: "Umm Bab",              nameAr: "أم بـاب",               lat: 25.2087, lon: 50.8026 }
+        { name: "Rawdat Rashed",        nameAr: "روضة راشد",             lat: 25.2373, lon: 51.2047 },
+        { name: "Umm Bab",              nameAr: "أم باب",                lat: 25.2087, lon: 50.8026 }
     ],
     DAAYEN: [
         { name: "Umm Slal Mohammed",    nameAr: "أم صلال محمد",         lat: 25.4697, lon: 51.4411 },
-        { name: "Al Kheesa",            nameAr: "الخيسة",              lat: 25.4531, lon: 51.4214 },
+        { name: "Al Kheesa",            nameAr: "الخيسة",               lat: 25.4531, lon: 51.4214 },
         { name: "Al Jelaiah",           nameAr: "الجلاية",              lat: 25.4978, lon: 51.4556 },
-        { name: "Al Froosh",            nameAr: "الفروش",              lat: 25.5225, lon: 51.4736 },
-        { name: "Umm Qarn",             nameAr: "أم قرن",              lat: 25.5500, lon: 51.4167 },
+        { name: "Al Froosh",            nameAr: "الفروش",               lat: 25.5225, lon: 51.4736 },
+        { name: "Umm Qarn",             nameAr: "أم قرن",               lat: 25.5500, lon: 51.4167 },
         { name: "Umm Slal Ali",         nameAr: "أم صلال علي",          lat: 25.4742, lon: 51.4031 }
     ]
 };
 
-// Build ALL from all municipalities
+// Build ALL from every municipality (exclude the ALL key itself)
 DATA_POINTS.ALL = Object.keys(DATA_POINTS)
     .filter(k => k !== 'ALL')
     .reduce((acc, k) => acc.concat(DATA_POINTS[k]), []);

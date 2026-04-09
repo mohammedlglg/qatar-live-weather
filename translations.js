@@ -1,24 +1,24 @@
 /**
  * translations.js
- * Qatar Live Weather Map i18n strings
+ * Qatar Live Weather Map — i18n strings (EN / AR)
  * by mohammedlglg
  */
 
 const T = {
     en: {
         pageTitle:   "Qatar Live Weather",
+        navTitle:    "Qatar Live Weather",
         mapTitle:    (r) => `${r} Live Weather`,
+        mapSubtitle: "Click any marker for detailed forecast",
         updating:    "Updating current conditions...",
         fetching:    "Fetching Live Weather Data...",
-        failed:      "Weather retrieval failed. wttr.in may be rate-limiting — try again shortly.",
-        regionLabel: "Select Region:",
+        failed:      "Weather retrieval failed. — try again shortly.",
+        regionLabel: "Region:",
         updated:     (t) => `Updated: ${t} (GMT+3)`,
-        card1Title:  "Rich Weather Data",
-        card1Body:   "Click any marker to see current conditions, 3-day forecast, and hourly breakdown.",
-        card2Title:  "Powered by wttr.in",
-        card2Body:   "Temperature, humidity, UV index, visibility, cloud cover, astronomy and more.",
-        card3Title:  "Note on Loading",
-        card3Body:   "fetches one location at a time. Large regions load progressively.",
+        hintTxt:     "Click any map marker for detailed weather",
+        hintSub:     "Forecast, hourly chart, astronomy & more",
+
+        // Conditions
         current:     "CURRENT",
         todayMax:    "TODAY MAX",
         todayMin:    "TODAY MIN",
@@ -28,18 +28,31 @@ const T = {
         uvIndex:     "UV Index",
         precip:      "Precip.",
         visibility:  "Visibility",
-        cloud:       "Cloud Cover",
+        cloud:       "Cloud",
         windSpeed:   "Wind",
-        quickFacts:  "Quick Facts",
-        wikiSource:  "Source: Wikipedia",
-        searching:   "Searching local history...",
+
+        // Dashboard sections
+        conditions:  "Current Conditions",
+        probability: "Probability Outlook",
+        sunMoon:     "Sun & Moon",
+        tempTrend:   "Temperature Trend — Today",
+        precipTrend: "Rain Chance — Today",
+        windDir:     "Wind Direction",
         forecast:    "3-Day Forecast",
-        hourly:      "Hourly Today",
+        hourly:      "Hourly Forecast",
+
+        // Astro
         sunrise:     "Sunrise",
         sunset:      "Sunset",
         moonPhase:   "Moon",
-        tempLegend:  "Temp",
+
+        // Misc
+        quickFacts:  "Quick Facts",
+        wikiSource:  "Source: Wikipedia",
+        searching:   "Searching local history...",
+        tempLegend:  "Temp (°C)",
         fallback:    (n, r) => `${n} is an important area in ${r}, Qatar.`,
+
         regions: {
             ALL:        "All Qatar",
             DOHA:       "Doha (Ad Dawhah)",
@@ -52,20 +65,21 @@ const T = {
         },
         optgroup: "Municipalities (Baladiyat)"
     },
+
     ar: {
         pageTitle:   "طقس قطر المباشر",
+        navTitle:    "طقس قطر المباشر",
         mapTitle:    (r) => `طقس ${r} المباشر`,
+        mapSubtitle: "انقر على أي علامة لرؤية تفاصيل الطقس",
         updating:    "جارٍ تحديث الأحوال الجوية...",
-        fetching:    "جارٍ جلب البيانات ",
-        failed:      "فشل في جلب البيانات. قد يكون محدود الطلبات — حاول مجدداً.",
-        regionLabel: "اختر المنطقة:",
+        fetching:    "جارٍ جلب البيانات...",
+        failed:      "فشل في جلب البيانات. — حاول مجدداً.",
+        regionLabel: "المنطقة:",
         updated:     (t) => `آخر تحديث: ${t} (GMT+3)`,
-        card1Title:  "بيانات طقس غنية",
-        card1Body:   "انقر على أي علامة لرؤية الحالة الراهنة وتوقعات 3 أيام والتوقعات كل ساعة.",
-        card2Title:  "مدعوم بـ wttr.in",
-        card2Body:   "درجة الحرارة، الرطوبة، مؤشر UV، الرؤية، الغيوم، وبيانات فلكية.",
-        card3Title:  "ملاحظة حول التحميل",
-        card3Body:   "يجلب موقعاً واحداً في كل مرة. المناطق الكبيرة تُحمَّل تدريجياً.",
+        hintTxt:     "انقر على أي علامة لعرض تفاصيل الطقس",
+        hintSub:     "التوقعات، الرسم البياني بالساعة، الفلك وأكثر",
+
+        // Conditions
         current:     "الآن",
         todayMax:    "أعلى اليوم",
         todayMin:    "أدنى اليوم",
@@ -77,16 +91,29 @@ const T = {
         visibility:  "الرؤية",
         cloud:       "الغيوم",
         windSpeed:   "الرياح",
-        quickFacts:  "معلومات سريعة",
-        wikiSource:  "المصدر: ويكيبيديا",
-        searching:   "جارٍ البحث...",
+
+        // Dashboard sections
+        conditions:  "الأحوال الراهنة",
+        probability: "احتمالات الطقس",
+        sunMoon:     "الشمس والقمر",
+        tempTrend:   "منحنى الحرارة — اليوم",
+        precipTrend: "احتمال المطر — اليوم",
+        windDir:     "اتجاه الرياح",
         forecast:    "توقعات 3 أيام",
-        hourly:      "التوقعات بالساعة اليوم",
+        hourly:      "التوقعات بالساعة",
+
+        // Astro
         sunrise:     "شروق الشمس",
         sunset:      "غروب الشمس",
         moonPhase:   "القمر",
+
+        // Misc
+        quickFacts:  "معلومات سريعة",
+        wikiSource:  "المصدر: ويكيبيديا",
+        searching:   "جارٍ البحث...",
         tempLegend:  "درجة الحرارة",
         fallback:    (n, r) => `${n} منطقة مهمة في ${r}، قطر.`,
+
         regions: {
             ALL:        "قطر",
             DOHA:       "الدوحة",

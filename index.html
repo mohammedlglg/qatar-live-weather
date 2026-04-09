@@ -6,110 +6,117 @@
     <meta name="description" content="Live weather conditions in Qatar including temperature, humidity, wind speed, and forecasts for Doha and all regions. Bilingual EN/AR.">
     <meta name="author" content="mohammedlglg">
     <meta name="google-adsense-account" content="ca-pub-2032436364726427">
-    
-    <title>Weather in Qatar| Real-Time Doha Weather Updates | Today Qatar Weather | Weather in Doha Tomorrow</title>
 
+    <title>Qatar Live Weather | Real-Time Doha Weather Updates | Today Weather | Weather in Qatar Now</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Sans+Arabic:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+
+    <!-- App Stylesheet -->
     <link rel="stylesheet" href="style.css">
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2032436364726427"
-     crossorigin="anonymous"></script>
-     <!-- Google tag (gtag.js) -->
+
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2032436364726427" crossorigin="anonymous"></script>
+
+    <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-YWEKPB5X90"></script>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2032436364726427"
-     crossorigin="anonymous"></script>
     <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-YWEKPB5X90');
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-YWEKPB5X90');
     </script>
 </head>
-<body class="bg-slate-50 p-4 md:p-8 flex flex-col min-h-screen">
-<div class="max-w-7xl mx-auto flex-grow w-full">
+<body>
 
-    <!-- ── Header ──────────────────────────────────────────── -->
-    <header class="mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
-        <div class="text-center md:text-left">
-            <h1 id="map-title" class="text-3xl font-bold text-slate-800">Qatar Live Weather</h1>
-            <div class="flex items-center gap-2 mt-1">
+    <!-- ── NAVBAR ─────────────────────────────────────────── -->
+    <nav class="navbar">
+        <div class="nav-inner">
+            <div class="nav-brand">
+                <svg class="brand-icon" width="22" height="22" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="M2 12h2"/>
+                    <path d="m4.93 19.07 1.41-1.41"/><path d="M12 20v2"/>
+                    <path d="m19.07 19.07-1.41-1.41"/><path d="M22 12h-2"/>
+                    <path d="m19.07 4.93-1.41 1.41"/><circle cx="12" cy="12" r="4"/>
+                </svg>
+                <span id="nav-title">Qatar Live Weather</span>
+            </div>
+            <div class="nav-actions">
+                <!-- Language pill -->
+                <div class="lang-pill">
+                    <button id="btn-en" class="lang-btn active" onclick="setLang('en')">EN</button>
+                    <button id="btn-ar" class="lang-btn" onclick="setLang('ar')">ع</button>
+                </div>
+                <!-- Region selector -->
+                <div class="region-wrap">
+                    <label id="region-label" for="region-select">Region:</label>
+                    <select id="region-select"></select>
+                </div>
+                <!-- Unit toggle -->
+                <button class="icon-btn active" id="btnC" onclick="setUnit('C')">°C</button>
+                <button class="icon-btn" id="btnF" onclick="setUnit('F')">°F</button>
+                <!-- Theme toggle -->
+                <button class="icon-btn" id="themeBtn" onclick="toggleTheme()">🌙</button>
             </div>
         </div>
+    </nav>
 
-        <div class="flex items-center gap-3 flex-wrap justify-center">
-            <!-- Language pill -->
-            <div class="flex items-center bg-white rounded-full border border-slate-200 shadow-sm overflow-hidden">
-                <button id="btn-en" onclick="setLang('en')"
-                    class="lang-btn active px-4 py-1.5 text-sm font-bold transition-all">EN</button>
-                <button id="btn-ar" onclick="setLang('ar')"
-                    class="lang-btn px-4 py-1.5 text-sm font-bold transition-all">ع</button>
-            </div>
-            <!-- Region selector -->
-            <div class="flex items-center gap-2 bg-white p-2 rounded-lg shadow-sm border border-slate-200">
-                <label id="region-label" for="region-select"
-                       class="text-sm font-semibold text-slate-700 ml-1">Select Region:</label>
-                <select id="region-select"
-                        class="bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-md
-                               focus:ring-emerald-500 focus:border-emerald-500 block p-2"></select>
-            </div>
-        </div>
-    </header>
+    <!-- ── MAIN LAYOUT ────────────────────────────────────── -->
+    <div class="app-wrap">
+        <div class="split-layout">
 
-    <!-- ── Map ─────────────────────────────────────────────── -->
-    <div class="relative bg-white p-2 rounded-xl shadow-lg border border-slate-200 overflow-hidden">
-        <!-- Loading overlay with progress bar -->
-        <div id="loading" class="loading-overlay">
-            <div id="loading-text" class="text-lg">Fetching Live Weather Data...</div>
-            <div id="loading-progress" class="loading-progress">0 / 0</div>
-            <div class="loading-bar-track">
-                <div id="loading-bar-fill" class="loading-bar-fill" style="width:0%"></div>
+            <!-- LEFT: MAP PANEL -->
+            <div class="map-panel">
+                <div style="position:relative;">
+                    <!-- Loading overlay -->
+                    <div id="loading" class="loading-overlay">
+                        <div class="spinner"></div>
+                        <div id="loading-text">Fetching Live Weather Data...</div>
+                        <div id="loading-progress" class="loading-progress">0 / 0</div>
+                        <div class="loading-bar-track">
+                            <div id="loading-bar-fill" class="loading-bar-fill" style="width:0%"></div>
+                        </div>
+                    </div>
+                    <div id="map"></div>
+                </div>
+                <div class="map-footer">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none"
+                         viewBox="0 0 24 24" stroke="currentColor">
+                        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    <span id="collection-time">Updating current conditions...</span>
+                </div>
             </div>
+
+            <!-- RIGHT: DASHBOARD PANEL -->
+            <div class="dash-panel" id="dash-panel">
+                <div class="hero-empty">
+                    <div style="font-size:36px;">🗺️</div>
+                    <div class="hint-txt" id="hint-txt">Click any map marker for detailed weather</div>
+                    <div class="hint-sub" id="hint-sub">Forecast, hourly chart, astronomy &amp; more</div>
+                </div>
+            </div>
+
         </div>
-        <div id="map"></div>
-        <p id="collection-time" class="text-slate-500 italic text-xs px-1 py-1">
-            Updating current conditions...
-        </p>
     </div>
 
-    <!-- ── Info cards ───────────────────────────────────────── -->
-    <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm mb-8">
-        <div class="bg-emerald-50 p-4 rounded-lg border border-emerald-100">
-            <h3 id="card1-title" class="font-semibold text-emerald-800 mb-1">Rich Weather Data</h3>
-            <p  id="card1-body"  class="text-emerald-700">
-                Click any marker to see current conditions, 3-day forecast, and hourly breakdown.
-            </p>
-        </div>
-        <div class="bg-teal-50 p-4 rounded-lg border border-teal-100">
-            <h3 id="card2-title" class="font-semibold text-teal-800 mb-1"></h3>
-            <p  id="card2-body"  class="text-teal-700">
-                Temperature, humidity, UV index, visibility, cloud cover, astronomy and more.
-            </p>
-        </div>
-        <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
-            <h3 id="card3-title" class="font-semibold text-slate-800 mb-1">Note on Loading</h3>
-            <p  id="card3-body"  class="text-slate-700">
-                wttr.in fetches one location at a time. Large regions load progressively.
-            </p>
-        </div>
-    </div>
-
-    <!-- ── Footer ──────────────────────────────────────────── -->
-    <footer class="mt-auto pt-6 border-t border-slate-200 text-slate-500 text-xs
-                   flex flex-col md:flex-row justify-between items-center gap-4 pb-4">
-        <div class="flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 flex-shrink-0"
-                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            <span>
-                <strong>Data Source :</strong>
-                <a href="https://wttr.in" class="underline hover:text-emerald-600">wttr.in</a> &amp;
-                <a href="https://wikipedia.org" class="underline hover:text-emerald-600">Wikipedia</a>
-            </span>
-        </div>
+    <!-- ── FOOTER ─────────────────────────────────────────── -->
+    <footer class="footer">
+        <span>
+            <strong>Data:</strong>
+            <a href="https://wttr.in" target="_blank">wttr.in</a> &amp;
+            <a href="https://wikipedia.org" target="_blank">Wikipedia</a>
+        </span>
         <div class="sig-badge">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none"
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none"
                  viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
@@ -118,11 +125,11 @@
         </div>
     </footer>
 
-</div>
+    <!-- ── Scripts ────────────────────────────────────────── -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="translations.js"></script>
+    <script src="data.js"></script>
+    <script src="app.js"></script>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="translations.js"></script>
-<script src="data.js"></script>
-<script src="app.js"></script>
 </body>
 </html>
