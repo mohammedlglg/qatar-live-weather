@@ -35,13 +35,13 @@ const DATA_POINTS = {
         { name: "Abu Samra",            nameAr: "أبو سمرة",             lat: 24.7451, lon: 50.8469 }
     ],
     WAKRAH: [
-        { name: "Al Wakrah City",       nameAr: "مدينة الوكرة",         lat: 25.1694, lon: 51.5983 },
-        { name: "Al Wukair",            nameAr: "الوكير",               lat: 25.1614, lon: 51.5178 },
-        { name: "Mesaieed",             nameAr: "مسيعيد",               lat: 24.9989, lon: 51.5547 },
-        { name: "Sealine Beach",        nameAr: "شاطئ سيلاين",          lat: 24.9200, lon: 51.5800 },
-        { name: "Al Mashaf",            nameAr: "المشاف",               lat: 25.1867, lon: 51.5622 },
-        { name: "Wholesale Market",     nameAr: "سوق الجملة",           lat: 25.1453, lon: 51.5325 },
-        { name: "Ras Laffan South",     nameAr: "رأس لفان الجنوبية",    lat: 25.1000, lon: 51.5500 }
+        { name: "Al Wakrah City",       nameAr: "مدينة الوكرة",             lat: 25.1694, lon: 51.5983 },
+        { name: "Al Wukair",            nameAr: "الوكير",                   lat: 25.1614, lon: 51.5178 },
+        { name: "Mesaieed",             nameAr: "مسيعيد",                   lat: 24.9989, lon: 51.5547 },
+        { name: "Sealine Beach",        nameAr: "شاطئ سيلين",              lat: 24.9200, lon: 51.5800 },
+        { name: "Al Mashaf",            nameAr: "المشاف",                   lat: 25.1867, lon: 51.5622 },
+        { name: "Inland Sea",           nameAr: "خـور العديد",              lat: 24.552253, lon: 51.319885 },
+        { name: "Al Kharrara",          nameAr: "الخرارة",                  lat: 24.902455, lon: 51.173222 }
     ],
     KHOR: [
         { name: "Al Khor Town",         nameAr: "مدينة الخور",          lat: 25.6804, lon: 51.4958 },
