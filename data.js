@@ -52,7 +52,7 @@ const DATA_POINTS = {
     SHAMAL: [
         { name: "Madinat ash Shamal",   nameAr: "مدينة الشمال",         lat: 26.1131, lon: 51.2131 },
         { name: "Al Ruwais",            nameAr: "الرويس",               lat: 26.1467, lon: 51.2058 },
-        { name: "Abu Dhalouf",          nameAr: "أبو ذلوف",             lat: 26.0836, lon: 51.2517 },
+        { name: "Al Ghariya Beach",     nameAr: "شاطئ الغارية",         lat: 26.072598, lon: 51.359646 },
         { name: "Al Qa`Abiyah",         nameAr: "الكعبية",              lat: 26.0622, lon: 51.2733 },
         { name: "Al Zubara",            nameAr: "الزبارة",              lat: 25.9740, lon: 51.0314 },
         { name: "Al Arish",             nameAr: "العريش",               lat: 26.0482, lon: 51.0569 },
