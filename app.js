@@ -2,23 +2,10 @@
  * app.js
  * Qatar Live Weather Map
  * by mohammedlglg
- *
- * wttr.in JSON format (format=j1) provides per location:
- *   current_condition[0]  — live readings
- *   weather[0..2]         — today + 2 days forecast
- *   weather[n].hourly[]   — 8 x 3-hour slots per day
- *   weather[n].astronomy  — sunrise, sunset, moon phase
- *
- * Because wttr.in has no batch endpoint, all fetches are
- * individual and run in parallel. A progress bar tracks
- * how many have completed so the map fills in progressively.
  */
 
 'use strict';
 
-/* ═══════════════════════════════════════════════════════════════
-   BASEMAPS  (no API key required)
-   ═══════════════════════════════════════════════════════════════ */
 const BASEMAPS = [
     { key:'carto_light',  labelEn:'Light',        labelAr:'فاتح',           color:'#e5e7eb',
       url:'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
@@ -40,10 +27,6 @@ const BASEMAPS = [
       attribution:'&copy; Esri &mdash; Maxar', maxZoom:20 }
 ];
 
-/* ═══════════════════════════════════════════════════════════════
-   WTTR.IN  →  CONDITION ICON MAP
-   Maps wttr.in weatherCode (WMO-style) to an emoji
-   ═══════════════════════════════════════════════════════════════ */
 const WTTR_ICONS = {
     113:'☀️', 116:'⛅', 119:'☁️', 122:'☁️',
     143:'🌫️', 176:'🌦️', 179:'🌨️', 182:'🌧️', 185:'🌧️',
@@ -59,20 +42,14 @@ const WTTR_ICONS = {
     386:'⛈️', 389:'⛈️', 392:'⛈️', 395:'⛈️'
 };
 
-/* ═══════════════════════════════════════════════════════════════
-   STATE
-   ═══════════════════════════════════════════════════════════════ */
 let map, markersLayer, legendControl, basemapControl;
 let currentTileLayer  = null;
 let currentBasemapKey = 'carto_light';
 let currentLang       = 'en';
 let currentRegionKey  = 'DOHA';
 const factsCache      = new Map();
-const weatherCache    = new Map();   // key: "lat,lon" → wttr JSON
+const weatherCache    = new Map();
 
-/* ═══════════════════════════════════════════════════════════════
-   HELPERS
-   ═══════════════════════════════════════════════════════════════ */
 const rnd = v => (v == null || isNaN(+v)) ? null : Math.round(+v);
 
 function getColor(t) {
@@ -104,7 +81,6 @@ function getQatarTime() {
     return `${day} ${mons[q.getMonth()]} ${q.getFullYear()}, ${h}:${m}`;
 }
 
-/* ── Day label from wttr date string "YYYY-MM-DD" ─────────── */
 function dayLabel(dateStr) {
     const d   = new Date(dateStr + 'T12:00:00');
     const now = new Date();
@@ -121,7 +97,6 @@ function dayLabel(dateStr) {
     return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];
 }
 
-/* ── Format "HH00" → "Hpm/am" ──────────────────────────────── */
 function hourLabel(timeVal) {
     const h = Math.floor(+timeVal / 100);
     if (currentLang === 'ar') return `${h}:00`;
@@ -131,12 +106,44 @@ function hourLabel(timeVal) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   WTTR.IN  FETCH  (single location, with cache)
+   MARKER ICON
+   Use L.divIcon (a plain HTML marker) instead of circleMarker
+   + bindTooltip. Leaflet's tooltip positioning code reads the
+   page's text direction and flips its margin offset in RTL mode,
+   which pushes the label outside the circle. A divIcon renders
+   a self-contained HTML element with no offset logic at all, so
+   it is completely immune to the RTL page direction.
    ═══════════════════════════════════════════════════════════════ */
+function makeTempIcon(temp, color) {
+    const S = 28;  // icon diameter in px
+    return L.divIcon({
+        className: '',   // clear Leaflet's default white-box class
+        html: `<div style="
+            width:${S}px;
+            height:${S}px;
+            border-radius:50%;
+            background:${color};
+            border:2px solid #fff;
+            box-sizing:border-box;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:11px;
+            font-weight:800;
+            color:#fff;
+            text-shadow:0 0 3px rgba(0,0,0,0.85);
+            direction:ltr;
+            unicode-bidi:isolate;
+        ">${temp}</div>`,
+        iconSize:    [S, S],
+        iconAnchor:  [S / 2, S / 2],
+        popupAnchor: [0, -(S / 2)]
+    });
+}
+
 async function fetchWttr(town) {
     const cacheKey = `${town.lat},${town.lon}`;
     if (weatherCache.has(cacheKey)) return weatherCache.get(cacheKey);
-
     const res = await fetch(
         `https://wttr.in/${town.lat},${town.lon}?format=j1`,
         { signal: AbortSignal.timeout(10000) }
@@ -147,7 +154,6 @@ async function fetchWttr(town) {
     return data;
 }
 
-/* ── Parse a wttr j1 response into a flat reading object ───── */
 function parseWttr(data) {
     const c = data.current_condition?.[0] || {};
     const w = data.weather?.[0]           || {};
@@ -171,11 +177,11 @@ function parseWttr(data) {
         sunset:    a.sunset  || null,
         moonPhase: a.moon_phase || null,
         forecast:  (data.weather || []).map(day => ({
-            date:    day.date,
-            max:     rnd(day.maxtempC),
-            min:     rnd(day.mintempC),
-            icon:    WTTR_ICONS[+(day.hourly?.[4]?.weatherCode || 113)] || '🌡️',
-            desc:    day.hourly?.[4]?.weatherDesc?.[0]?.value || ''
+            date: day.date,
+            max:  rnd(day.maxtempC),
+            min:  rnd(day.mintempC),
+            icon: WTTR_ICONS[+(day.hourly?.[4]?.weatherCode || 113)] || '🌡️',
+            desc: day.hourly?.[4]?.weatherDesc?.[0]?.value || ''
         })),
         hourly: (w.hourly || []).map(h => ({
             time: h.time,
@@ -186,9 +192,6 @@ function parseWttr(data) {
     };
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   WIKIPEDIA FACTS
-   ═══════════════════════════════════════════════════════════════ */
 async function getTownFacts(nameEn, nameAr, region) {
     const key = `${nameEn}-${region}-${currentLang}`;
     if (factsCache.has(key)) return factsCache.get(key);
@@ -219,15 +222,12 @@ async function getTownFacts(nameEn, nameAr, region) {
     } catch { return T[currentLang].fallback(nameEn, region); }
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   POPUP BUILDER  — rich wttr popup with forecast + hourly
-   ═══════════════════════════════════════════════════════════════ */
 function buildPopup(town, reading, factText, isLoadingFacts, regionKey) {
-    const tr      = T[currentLang];
-    const isRTL   = currentLang === 'ar';
-    const name    = isRTL ? town.nameAr : town.name;
-    const rName   = tr.regions[regionKey];
-    const d       = reading;
+    const tr    = T[currentLang];
+    const isRTL = currentLang === 'ar';
+    const name  = isRTL ? town.nameAr : town.name;
+    const rName = tr.regions[regionKey];
+    const d     = reading;
 
     const row = (label, val) =>
         `<div style="display:flex;justify-content:space-between;padding:3px 8px;font-size:11px;border-bottom:1px solid #f1f5f9">
@@ -345,9 +345,6 @@ function buildPopup(town, reading, factText, isLoadingFacts, regionKey) {
     </div>`;
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   BASEMAP + LEGEND CONTROLS
-   ═══════════════════════════════════════════════════════════════ */
 function switchBasemap(key) {
     if (currentTileLayer) map.removeLayer(currentTileLayer);
     const bm = BASEMAPS.find(b => b.key === key);
@@ -424,9 +421,6 @@ function buildLegend() {
     legendControl.addTo(map);
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   REGION SELECT
-   ═══════════════════════════════════════════════════════════════ */
 function buildSelect(selectedKey) {
     const sel = document.getElementById('region-select');
     const t   = T[currentLang];
@@ -439,9 +433,6 @@ function buildSelect(selectedKey) {
     if (selectedKey === 'ALL') sel.value = 'ALL';
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   LANGUAGE SWITCHER
-   ═══════════════════════════════════════════════════════════════ */
 function setLang(lang) {
     currentLang = lang;
     const html  = document.documentElement;
@@ -473,9 +464,6 @@ function setLang(lang) {
     if (loading) loading.textContent = t.fetching;
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   MAP INIT
-   ═══════════════════════════════════════════════════════════════ */
 function initMap() {
     map = L.map('map').setView([25.2854, 51.5310], 12);
     markersLayer = L.layerGroup().addTo(map);
@@ -485,9 +473,6 @@ function initMap() {
     document.getElementById('region-select').addEventListener('change', e => updateView(e.target.value));
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   MAIN UPDATE — progressive parallel fetch with progress bar
-   ═══════════════════════════════════════════════════════════════ */
 async function updateView(regionKey, isInitial = false) {
     currentRegionKey = regionKey;
 
@@ -513,7 +498,6 @@ async function updateView(regionKey, isInitial = false) {
     document.getElementById('map-title').textContent = tr.mapTitle(tr.regions[regionKey]);
     markersLayer.clearLayers();
 
-    // Fit bounds
     const bounds = L.latLngBounds(towns.map(t => [t.lat, t.lon]));
     if (bounds.isValid()) {
         map.invalidateSize();
@@ -526,7 +510,6 @@ async function updateView(regionKey, isInitial = false) {
     let done = 0;
     const total = towns.length;
 
-    // Kick off all fetches in parallel; add each marker as it resolves
     const promises = towns.map(town =>
         fetchWttr(town)
             .then(raw => {
@@ -535,18 +518,16 @@ async function updateView(regionKey, isInitial = false) {
                 lProg.textContent = `${done} / ${total}`;
                 lBar.style.width  = `${Math.round(done/total*100)}%`;
 
-                // Place marker immediately
-                const temp   = reading.temp ?? 0;
-                const marker = L.circleMarker([town.lat, town.lon], {
-                    radius:14, fillColor:getColor(temp),
-                    color:'#fff', weight:2, opacity:1, fillOpacity:0.9
+                const temp  = reading.temp ?? 0;
+                const color = getColor(temp);
+
+                /* L.marker with a divIcon: the circle + number are
+                   rendered as a plain HTML div, fully insulated from
+                   Leaflet's tooltip RTL offset bug. */
+                const marker = L.marker([town.lat, town.lon], {
+                    icon: makeTempIcon(temp, color)
                 }).addTo(markersLayer);
 
-                marker.bindTooltip(`${temp}`, {
-                    permanent:true, direction:'center', className:'temp-label'
-                });
-
-                // Click → rich popup
                 marker.on('click', async () => {
                     marker.bindPopup(
                         buildPopup(town, reading, tr.searching, true, regionKey),
@@ -574,9 +555,6 @@ async function updateView(regionKey, isInitial = false) {
     document.getElementById('collection-time').textContent = tr.updated(getQatarTime());
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   BOOT
-   ═══════════════════════════════════════════════════════════════ */
 window.onload = () => {
     buildSelect('DOHA');
     initMap();

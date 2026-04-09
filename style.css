@@ -18,19 +18,6 @@ body.ar { font-family: 'Noto Sans Arabic', sans-serif; }
 /* ── Map ──────────────────────────────────────────────────── */
 #map { height: 620px; width: 100%; border-radius: 0.5rem; }
 
-/* ── Temp label on markers ───────────────────────────────── */
-.temp-label {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    font-weight: 800;
-    font-size: 11px;
-    color: white !important;
-    text-shadow: 0 0 3px rgba(0,0,0,0.85);
-    pointer-events: none;
-    display: flex; align-items: center; justify-content: center;
-}
-
 /* ── Loading overlay ─────────────────────────────────────── */
 .loading-overlay {
     position: absolute; top:0; left:0; right:0; bottom:0;
@@ -173,15 +160,6 @@ html[dir="rtl"] .weather-popup {
     background: #fefce8; border: 1px solid #fde68a;
     border-radius: 5px; padding: 3px 7px;
     white-space: nowrap;
-}
-
-── wttr badge ──────────────────────────────────────────── */
-/* .wttr-badge {
-    display: inline-flex; align-items: center; gap: 4px;
-    background: var(--accent-light);
-    border: 1px solid #6ee7b7;
-    border-radius: 4px; padding: 2px 7px;
-    font-size: 10px; font-weight: 700; color: var(--accent-dark);
 }
 
 /* ── Signature ───────────────────────────────────────────── */
