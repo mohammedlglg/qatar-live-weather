@@ -9,7 +9,7 @@ const DATA_POINTS = {
     DOHA: [
         { name: "Hamad International Airport",      nameAr: "مطار حمد الدولي",                      lat: 25.259477, lon: 51.614324 },
         { name: "West Bay",                         nameAr: "الخليج الغربي",                        lat: 25.324515, lon: 51.533941 },
-        { name: "The Pearl-Qatar",                  nameAr: "اللؤلؤة - قطر",                        lat: 25.3713, lon: 51.5513 },
+        { name: "The Pearl",                        nameAr: "اللؤلؤة",                              lat: 25.3713, lon: 51.5513 },
         { name: "Lusail",                           nameAr: "لوسيل",                                 lat: 25.421421, lon: 51.501751 },
         { name: "Old Doha Port",                    nameAr: "ميناء الدوحة القديم",                  lat: 25.297427, lon: 51.549693 },
         { name: "Corniche",                         nameAr: "الكورنيش",                             lat: 25.301023, lon: 51.518848 },
