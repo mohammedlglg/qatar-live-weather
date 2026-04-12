@@ -46,6 +46,30 @@ const T = {
         sunset:      "Sunset",
         moonPhase:   "Moon",
 
+        // Prayer times
+        prayerTimes:  "Prayer Times",
+        prayerFajr:   "Fajr",
+        prayerSunrise:"Sunrise",
+        prayerDhuhr:  "Dhuhr",
+        prayerAsr:    "Asr",
+        prayerMaghrib:"Maghrib",
+        prayerIsha:   "Isha",
+        prayerLoading:"Loading prayer times...",
+        prayerError:  "Prayer times unavailable",
+
+        // Heat stress
+        heatStress:       "Heat Stress",
+        heatStressSafe:   "Safe",
+        heatStressCaution:"Caution",
+        heatStressExtreme:"Extreme Caution",
+        heatStressDanger: "Danger",
+        heatStressExtDanger:"Extreme Danger",
+        heatStressSafeDesc:    "Safe for outdoor activity",
+        heatStressCautionDesc: "Fatigue possible with prolonged exposure",
+        heatStressExtremeDesc: "Heat stroke possible — limit outdoor exposure",
+        heatStressDangerDesc:  "Heat stroke likely — avoid outdoor activity",
+        heatStressExtDangerDesc:"Life-threatening — stay indoors",
+
         // Misc
         quickFacts:  "Quick Facts",
         wikiSource:  "Source: Wikipedia",
@@ -56,6 +80,13 @@ const T = {
         // Alerts
         alertHeat:   (t) => `Extreme Heat Alert — Feels like ${t}°C. Avoid outdoor exposure.`,
         alertDust:   (v, w) => `Dust/Sandstorm Alert — Visibility ${v} km, Wind ${w} km/h. Avoid driving.`,
+
+        // Cookie consent
+        cookieTitle:   "We use cookies",
+        cookieDesc:    "This site uses Google Analytics and AdSense cookies. See our",
+        cookiePrivacy: "Privacy Policy",
+        cookieAccept:  "Accept",
+        cookieDecline: "Decline",
 
         // New features
         shareBtn:    "Share",
@@ -121,6 +152,30 @@ const T = {
         sunset:      "غروب الشمس",
         moonPhase:   "القمر",
 
+        // Prayer times
+        prayerTimes:  "مواقيت الصلاة",
+        prayerFajr:   "الفجر",
+        prayerSunrise:"الشروق",
+        prayerDhuhr:  "الظهر",
+        prayerAsr:    "العصر",
+        prayerMaghrib:"المغرب",
+        prayerIsha:   "العشاء",
+        prayerLoading:"جارٍ تحميل مواقيت الصلاة...",
+        prayerError:  "مواقيت الصلاة غير متاحة",
+
+        // Heat stress
+        heatStress:       "مؤشر الإجهاد الحراري",
+        heatStressSafe:   "آمن",
+        heatStressCaution:"تحذير",
+        heatStressExtreme:"تحذير شديد",
+        heatStressDanger: "خطر",
+        heatStressExtDanger:"خطر بالغ",
+        heatStressSafeDesc:    "آمن للنشاط في الهواء الطلق",
+        heatStressCautionDesc: "التعب ممكن عند التعرض المطول",
+        heatStressExtremeDesc: "ضربة الشمس ممكنة — حدّد التعرض للخارج",
+        heatStressDangerDesc:  "ضربة الشمس محتملة — تجنب الخروج",
+        heatStressExtDangerDesc:"خطر مهدد للحياة — ابقَ في الداخل",
+
         // Misc
         quickFacts:  "معلومات سريعة",
         wikiSource:  "المصدر: ويكيبيديا",
@@ -131,6 +186,13 @@ const T = {
         // Alerts
         alertHeat:   (t) => `تحذير حرارة شديدة — الحرارة الحسية ${t}°م. تجنب التعرض للشمس.`,
         alertDust:   (v, w) => `تحذير عاصفة رملية — الرؤية ${v} كم، الرياح ${w} كم/س. تجنب القيادة.`,
+
+        // Cookie consent
+        cookieTitle:   "نستخدم ملفات الارتباط",
+        cookieDesc:    "يستخدم هذا الموقع ملفات تعريف الارتباط من Google Analytics وAdSense. اطلع على",
+        cookiePrivacy: "سياسة الخصوصية",
+        cookieAccept:  "قبول",
+        cookieDecline: "رفض",
 
         // New features
         shareBtn:    "مشاركة",

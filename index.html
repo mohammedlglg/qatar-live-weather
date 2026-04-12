@@ -3,21 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Live weather conditions in Qatar including temperature, humidity, wind speed, and forecasts for Doha and all regions. Bilingual EN/AR.">
+    <meta name="description" content="Qatar Live Weather — real-time interactive weather map for Doha and all Qatar municipalities. Current temperature, humidity, wind speed, 3-day forecast, hourly chart, UV index, prayer times and more. Bilingual EN/AR.">
+    <meta name="keywords" content="Qatar weather, Doha weather, weather in Qatar, Qatar temperature today, live weather Qatar, طقس قطر, طقس الدوحة">
     <meta name="author" content="mohammedlglg">
     <meta name="theme-color" content="#059669">
+    <meta name="robots" content="index, follow">
     <meta name="google-adsense-account" content="ca-pub-2032436364726427">
+
+    <!-- Canonical -->
+    <link rel="canonical" href="https://mohammedlglg.github.io/qatar-live-weather/">
 
     <!-- Open Graph / Social sharing -->
     <meta property="og:type"        content="website">
     <meta property="og:title"       content="Qatar Live Weather — Real-Time Doha & All Regions">
-    <meta property="og:description" content="Interactive live weather map for Qatar with temperature, humidity, wind, forecasts and more. Bilingual EN/AR.">
+    <meta property="og:description" content="Interactive live weather map for Qatar with temperature, humidity, wind, forecasts, UV index, prayer times and more. Bilingual EN/AR.">
     <meta property="og:image"       content="https://mohammedlglg.github.io/qatar-live-weather/og-image.png">
     <meta property="og:url"         content="https://mohammedlglg.github.io/qatar-live-weather/">
+    <meta property="og:locale"      content="en_US">
+    <meta property="og:locale:alternate" content="ar_QA">
     <meta name="twitter:card"       content="summary_large_image">
     <meta name="twitter:title"      content="Qatar Live Weather">
     <meta name="twitter:description" content="Real-time weather map for all Qatar municipalities. EN/AR.">
     <meta name="twitter:image"      content="https://mohammedlglg.github.io/qatar-live-weather/og-image.png">
+    <meta name="twitter:site"       content="@QatarLiveWX">
 
     <title>Qatar Live Weather | Real-Time Doha Weather Updates | Today Weather | Weather in Qatar Now</title>
 
@@ -34,6 +42,56 @@
 
     <!-- App Stylesheet -->
     <link rel="stylesheet" href="style.css">
+
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://mohammedlglg.github.io/qatar-live-weather/#website",
+          "url": "https://mohammedlglg.github.io/qatar-live-weather/",
+          "name": "Qatar Live Weather",
+          "description": "Real-time interactive weather map for Qatar — all municipalities, bilingual EN/AR",
+          "inLanguage": ["en", "ar"],
+          "publisher": {
+            "@type": "Organization",
+            "name": "Qatar Live Weather",
+            "url": "https://mohammedlglg.github.io/qatar-live-weather/"
+          }
+        },
+        {
+          "@type": "WebApplication",
+          "@id": "https://mohammedlglg.github.io/qatar-live-weather/#app",
+          "name": "Qatar Live Weather Map",
+          "url": "https://mohammedlglg.github.io/qatar-live-weather/",
+          "applicationCategory": "WeatherApplication",
+          "operatingSystem": "Any",
+          "description": "Live weather map covering all Qatar municipalities with temperature, humidity, wind, UV index, prayer times, forecasts, and astronomy data.",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          },
+          "featureList": [
+            "Real-time temperature map",
+            "3-day weather forecast",
+            "Hourly weather forecast",
+            "UV Index tracking",
+            "Prayer times integration",
+            "Arabic / English bilingual",
+            "Dark mode support",
+            "Offline PWA support"
+          ],
+          "areaServed": {
+            "@type": "Country",
+            "name": "Qatar"
+          }
+        }
+      ]
+    }
+    </script>
 
     <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2032436364726427" crossorigin="anonymous"></script>
@@ -54,6 +112,23 @@
         <span id="alert-icon">⚠️</span>
         <span id="alert-text"></span>
         <button class="alert-dismiss" id="alert-dismiss" aria-label="Dismiss alert">✕</button>
+    </div>
+
+    <!-- ── COOKIE CONSENT BANNER ─────────────────────────────── -->
+    <div id="cookie-banner" class="cookie-banner" role="dialog" aria-label="Cookie consent" aria-modal="false" style="display:none">
+        <div class="cookie-inner">
+            <div class="cookie-text">
+                <span class="cookie-icon" aria-hidden="true">🍪</span>
+                <div>
+                    <strong id="cookie-title">We use cookies</strong>
+                    <p id="cookie-desc">This site uses Google Analytics and Google AdSense cookies to improve your experience and serve relevant ads. See our <a href="privacy.html" id="cookie-privacy-link">Privacy Policy</a>.</p>
+                </div>
+            </div>
+            <div class="cookie-actions">
+                <button class="cookie-btn cookie-decline" id="cookie-decline">Decline</button>
+                <button class="cookie-btn cookie-accept" id="cookie-accept">Accept</button>
+            </div>
+        </div>
     </div>
 
     <!-- ── NAVBAR ─────────────────────────────────────────────────── -->
@@ -120,7 +195,10 @@
                 <div style="position:relative;">
                     <!-- Loading overlay -->
                     <div id="loading" class="loading-overlay" role="status" aria-live="polite">
-                        <div class="spinner" aria-hidden="true"></div>
+                        <div class="brand-spinner" aria-hidden="true">
+                            <div class="bs-ring"></div>
+                            <div class="bs-icon">🌤️</div>
+                        </div>
                         <div id="loading-text">Fetching Live Weather Data...</div>
                         <div id="loading-progress" class="loading-progress">0 / 0</div>
                         <div class="loading-bar-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="loading-bar">
@@ -161,18 +239,41 @@
 
     <!-- ── FOOTER ─────────────────────────────────────────────── -->
     <footer class="footer" role="contentinfo">
-        <span>
-            <strong>Data:</strong>
-            <a href="https://wttr.in" target="_blank" rel="noopener">wttr.in</a> &amp;
-            <a href="https://wikipedia.org" target="_blank" rel="noopener">Wikipedia</a>
-        </span>
-        <div class="sig-badge">
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none"
-                 viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
-            </svg>
-            by <span>mohammedlglg</span>
+        <div class="footer-top">
+            <div class="footer-brand">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                     style="color:var(--accent)" aria-hidden="true">
+                    <path d="M12 2v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="M2 12h2"/>
+                    <path d="m4.93 19.07 1.41-1.41"/><path d="M12 20v2"/>
+                    <path d="m19.07 19.07-1.41-1.41"/><path d="M22 12h-2"/>
+                    <path d="m19.07 4.93-1.41 1.41"/><circle cx="12" cy="12" r="4"/>
+                </svg>
+                <span style="font-weight:700;font-size:14px">Qatar Live Weather</span>
+            </div>
+            <nav class="footer-nav" aria-label="Footer navigation">
+                <a href="about.html">About</a>
+                <a href="privacy.html">Privacy Policy</a>
+                <a href="contact.html">Contact</a>
+            </nav>
+        </div>
+        <div class="footer-bottom">
+            <span class="footer-data">
+                <strong>Data:</strong>
+                <a href="https://wttr.in" target="_blank" rel="noopener">wttr.in</a> &amp;
+                <a href="https://wikipedia.org" target="_blank" rel="noopener">Wikipedia</a> &amp;
+                <a href="https://aladhan.com" target="_blank" rel="noopener">Aladhan</a>
+                &nbsp;·&nbsp;
+                <span class="footer-disclaimer" id="footer-disclaimer">Weather data is provided for informational purposes only and is not official Qatar Met Department data.</span>
+            </span>
+            <div class="sig-badge">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none"
+                     viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                </svg>
+                by <span>mohammedlglg</span>
+            </div>
         </div>
     </footer>
 

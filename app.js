@@ -4,7 +4,8 @@
  * Combined: interactive Leaflet map + rich dashboard panel
  * Enhancements: cache TTL, concurrency limiter, lazy Chart.js, active marker,
  *   skeleton loader, share URL, geolocation, heat/dust alerts, service worker,
- *   aria labels, mobile bottom sheet, error markers, refresh button, "near me"
+ *   aria labels, mobile bottom sheet, error markers, refresh button, "near me",
+ *   cookie consent, prayer times, heat stress index
  * by mohammedlglg
  */
 
@@ -68,11 +69,12 @@ let currentBasemapKey = 'esri_street';
 let currentLang       = 'en';
 let currentRegionKey  = 'DOHA';
 let currentUnit       = 'C';
-let activeMarkerEl    = null;  // DOM element of currently selected marker
+let activeMarkerEl    = null;
 
 // Cache with TTL: stores { data, ts }
-const weatherCache = new Map();
-const factsCache   = new Map();
+const weatherCache  = new Map();
+const factsCache    = new Map();
+const prayerCache   = new Map();
 
 let lastTown    = null;
 let lastReading = null;
@@ -84,6 +86,150 @@ let precipChartInst = null;
 // Freshness ticker
 let freshnessInterval = null;
 let lastFetchTime     = null;
+
+/* ═══════════════════════════════════════════════════════════
+   COOKIE CONSENT
+   ═══════════════════════════════════════════════════════════ */
+
+function initCookieConsent() {
+    const consent = localStorage.getItem('cookie_consent');
+    if (consent !== null) return; // already answered
+
+    const banner = document.getElementById('cookie-banner');
+    if (!banner) return;
+    banner.style.display = 'flex';
+
+    document.getElementById('cookie-accept').addEventListener('click', () => {
+        localStorage.setItem('cookie_consent', 'accepted');
+        banner.classList.add('cookie-hide');
+        setTimeout(() => { banner.style.display = 'none'; }, 350);
+    });
+    document.getElementById('cookie-decline').addEventListener('click', () => {
+        localStorage.setItem('cookie_consent', 'declined');
+        banner.classList.add('cookie-hide');
+        setTimeout(() => { banner.style.display = 'none'; }, 350);
+    });
+}
+
+function updateCookieBannerLang() {
+    const tr = T[currentLang];
+    const title   = document.getElementById('cookie-title');
+    const desc    = document.getElementById('cookie-desc');
+    const privLnk = document.getElementById('cookie-privacy-link');
+    const accept  = document.getElementById('cookie-accept');
+    const decline = document.getElementById('cookie-decline');
+    if (title)   title.textContent   = tr.cookieTitle;
+    if (accept)  accept.textContent  = tr.cookieAccept;
+    if (decline) decline.textContent = tr.cookieDecline;
+    if (desc && privLnk) {
+        desc.textContent = tr.cookieDesc + ' ';
+        privLnk.textContent = tr.cookiePrivacy;
+        desc.appendChild(privLnk);
+        desc.appendChild(document.createTextNode('.'));
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PRAYER TIMES (Aladhan API — free, no key required)
+   ═══════════════════════════════════════════════════════════ */
+
+async function fetchPrayerTimes(lat, lon) {
+    const today = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
+    const key   = `${Math.round(lat * 10) / 10},${Math.round(lon * 10) / 10}`;
+    const cached = prayerCache.get(key);
+    if (cached && cached.date === today) return cached.data;
+
+    const res = await fetch(
+        `https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=4`,
+        { signal: AbortSignal.timeout(8000) }
+    );
+    if (!res.ok) throw new Error(`Aladhan HTTP ${res.status}`);
+    const json = await res.json();
+    const data = json.data?.timings || null;
+    if (data) prayerCache.set(key, { data, date: today });
+    return data;
+}
+
+function renderPrayerTimes(timings, tr) {
+    if (!timings) {
+        return `<div class="sec-title animate-in" style="animation-delay:.38s">${tr.prayerTimes}</div>
+        <div class="chart-card animate-in" style="animation-delay:.40s">
+            <p style="font-size:12px;color:var(--txt3)">${tr.prayerError}</p>
+        </div>`;
+    }
+
+    const prayers = [
+        { key: 'Fajr',    label: tr.prayerFajr,    icon: '🌙' },
+        { key: 'Sunrise', label: tr.prayerSunrise,  icon: '🌅' },
+        { key: 'Dhuhr',   label: tr.prayerDhuhr,    icon: '🌞' },
+        { key: 'Asr',     label: tr.prayerAsr,      icon: '🌇' },
+        { key: 'Maghrib', label: tr.prayerMaghrib,  icon: '🌆' },
+        { key: 'Isha',    label: tr.prayerIsha,     icon: '🌃' }
+    ];
+
+    // Determine current / next prayer
+    const now = new Date();
+    const nowMins = now.getHours() * 60 + now.getMinutes();
+    const prayerMins = prayers.map(p => {
+        const [hh, mm] = (timings[p.key] || '00:00').split(':').map(Number);
+        return hh * 60 + mm;
+    });
+    let nextIdx = prayerMins.findIndex(m => m > nowMins);
+    if (nextIdx === -1) nextIdx = 0; // wrap to Fajr
+    const prevIdx = (nextIdx - 1 + prayers.length) % prayers.length;
+
+    let html = `<div class="sec-title animate-in" style="animation-delay:.38s">${tr.prayerTimes}</div>
+    <div class="prayer-grid animate-in" style="animation-delay:.40s">`;
+
+    prayers.forEach((p, i) => {
+        const isNext = (i === nextIdx);
+        const isPrev = (i === prevIdx);
+        html += `<div class="prayer-card${isNext ? ' prayer-next' : isPrev ? ' prayer-past' : ''}">
+            <div class="prayer-icon" aria-hidden="true">${p.icon}</div>
+            <div class="prayer-label">${p.label}</div>
+            <div class="prayer-time">${timings[p.key] || '—'}</div>
+            ${isNext ? `<div class="prayer-badge">Next</div>` : ''}
+        </div>`;
+    });
+
+    return html + `</div>`;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   HEAT STRESS INDEX
+   ═══════════════════════════════════════════════════════════ */
+
+function calcHeatStress(tempC, humidity) {
+    // WBGT-based simplified heat stress (NWS Heat Index approach)
+    // Stevenson heat stress scale
+    const hi = tempC; // using feels-like is better but temp works too
+    if (hi < 27)   return { level: 0, key: 'heatStressSafe',    color: 'var(--success)', icon: '✅' };
+    if (hi < 32)   return { level: 1, key: 'heatStressCaution', color: 'var(--warm)',    icon: '⚠️' };
+    if (hi < 39)   return { level: 2, key: 'heatStressExtreme', color: '#f97316',        icon: '🔶' };
+    if (hi < 46)   return { level: 3, key: 'heatStressDanger',  color: 'var(--danger)',  icon: '🔴' };
+    return               { level: 4, key: 'heatStressExtDanger',color: '#7c3aed',        icon: '☠️' };
+}
+
+function renderHeatStress(reading, tr) {
+    const feelsC = reading.feelsLike != null ? +reading.feelsLike : +reading.temp;
+    const hs = calcHeatStress(feelsC, +reading.humidity);
+    const label = tr[hs.key];
+    const desc  = tr[hs.key + 'Desc'];
+    const pct   = Math.min((feelsC / 50) * 100, 100);
+
+    return `<div class="d-card heat-stress-card">
+        <div class="d-head">
+            <span class="d-icon" aria-hidden="true">${hs.icon}</span>
+            <span class="d-title">${tr.heatStress}</span>
+        </div>
+        <div class="d-val" style="color:${hs.color}">${label}</div>
+        <div class="d-sub">${desc}</div>
+        <div class="d-bar" style="margin-top:8px">
+            <div class="d-bar-fill" style="width:${pct}%;background:${hs.color};transition:width .8s ease"></div>
+        </div>
+        <div style="font-size:10px;color:var(--txt3);margin-top:4px">${tr.feelsLike}: ${feelsC}°C</div>
+    </div>`;
+}
 
 /* ═══════════════════════════════════════════════════════════
    LAZY CHART.JS LOADER
@@ -181,11 +327,10 @@ function dayLabel(dateStr) {
 function fmtDate(d) { return new Date(d).toLocaleDateString('en', { month:'short', day:'numeric' }); }
 function fmtTime(t) { const h = Math.floor(parseInt(t)/100); return h + ':' + String(parseInt(t)%100).padStart(2,'0'); }
 
-/* Relative freshness: "Updated 3 min ago" */
+/* Relative freshness */
 function updateFreshnessLabel() {
     if (!lastFetchTime) return;
     const mins = Math.floor((Date.now() - lastFetchTime) / 60000);
-    const tr   = T[currentLang];
     const label = mins < 1
         ? (currentLang === 'ar' ? 'تم التحديث للتو' : 'Updated just now')
         : (currentLang === 'ar' ? `تم التحديث منذ ${mins} دقيقة` : `Updated ${mins} min ago`);
@@ -194,7 +339,7 @@ function updateFreshnessLabel() {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   CONCURRENCY-LIMITED FETCH (batch of N at a time)
+   CONCURRENCY-LIMITED FETCH
    ═══════════════════════════════════════════════════════════ */
 
 async function fetchInBatches(towns, fn, batchSize = FETCH_CONCURRENCY) {
@@ -208,7 +353,7 @@ async function fetchInBatches(towns, fn, batchSize = FETCH_CONCURRENCY) {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   MARKER ICON — touch-friendly 44px on mobile, 32px on desktop
+   MARKER ICON
    ═══════════════════════════════════════════════════════════ */
 
 const IS_TOUCH = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
@@ -235,7 +380,7 @@ function makeTempIcon(temp, color, isActive = false) {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   ALERT BANNER — heat index & dust/sandstorm
+   ALERT BANNER
    ═══════════════════════════════════════════════════════════ */
 
 function checkAlerts(reading) {
@@ -249,7 +394,6 @@ function checkAlerts(reading) {
     const wind   = +reading.windSpd;
     const isAr   = currentLang === 'ar';
 
-    // Dust/sandstorm: visibility < 2km + wind > 30 km/h
     if (vis < 2 && wind > 30) {
         alertIco.textContent = '🌪️';
         alertTxt.textContent = isAr
@@ -260,7 +404,6 @@ function checkAlerts(reading) {
         return;
     }
 
-    // Extreme heat: feels-like > 45°C
     if (feelsC > 45) {
         alertIco.textContent = '🔥';
         alertTxt.textContent = isAr
@@ -281,7 +424,6 @@ function checkAlerts(reading) {
 async function fetchWttr(town) {
     const key    = `${town.lat},${town.lon}`;
     const cached = weatherCache.get(key);
-    // Return cached if still fresh
     if (cached && (Date.now() - cached.ts) < CACHE_TTL) return cached.data;
 
     const res = await fetch(
@@ -460,7 +602,7 @@ function showToast(msg) {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   GEOLOCATION — "Near Me"
+   GEOLOCATION
    ═══════════════════════════════════════════════════════════ */
 
 function nearestTown(lat, lon) {
@@ -486,7 +628,6 @@ function geoLocate() {
             const { latitude: lat, longitude: lon } = pos.coords;
             const town = nearestTown(lat, lon);
             if (!town) return;
-            // Find which region this town belongs to
             let foundRegion = currentRegionKey;
             for (const [key, arr] of Object.entries(DATA_POINTS)) {
                 if (key === 'ALL') continue;
@@ -496,7 +637,6 @@ function geoLocate() {
                 }
             }
             map.flyTo([town.lat, town.lon], 14, { animate: true, duration: 1.2 });
-            // Load weather for that town
             fetchWttr(town).then(raw => {
                 const reading = parseWttr(raw);
                 lastTown    = town;
@@ -648,6 +788,7 @@ function renderConditions(d, ch, tr) {
     const vis = +d.visibility;
     return `<div class="sec-title animate-in" style="animation-delay:.16s">${tr.conditions}</div>
     <div class="details-grid animate-in" style="animation-delay:.18s">
+        ${renderHeatStress(d, tr)}
         <div class="d-card">
             <div class="d-head"><span class="d-icon" aria-hidden="true">👁️</span><span class="d-title">${tr.visibility}</span></div>
             <div class="d-val">${vis} <span class="d-unit">km</span></div>
@@ -804,6 +945,18 @@ function renderFacts(facts, isLoadingFacts, isRTL, tr) {
     </div>`;
 }
 
+/* Prayer times section — async, injected after main render */
+async function injectPrayerTimes(lat, lon, tr) {
+    const container = document.getElementById('prayer-section');
+    if (!container) return;
+    try {
+        const timings = await fetchPrayerTimes(lat, lon);
+        container.innerHTML = renderPrayerTimes(timings, tr);
+    } catch {
+        container.innerHTML = renderPrayerTimes(null, tr);
+    }
+}
+
 /* ═══════════════════════════════════════════════════════════
    MAIN DASHBOARD RENDERER
    ═══════════════════════════════════════════════════════════ */
@@ -829,11 +982,21 @@ function renderDashboard(town, reading, moonEmoji, facts, isLoadingFacts, region
         renderProbability(ch, tr) +
         renderAstro(d, moonEmoji, tr) +
         renderChartSection(d, tr) +
+        // Prayer times placeholder (loaded async)
+        `<div id="prayer-section" class="animate-in" style="animation-delay:.38s">
+            <div class="sec-title">${tr.prayerTimes}</div>
+            <div class="chart-card">
+                <p style="font-size:12px;color:var(--txt3);font-style:italic">${tr.prayerLoading}</p>
+            </div>
+        </div>` +
         renderFacts(facts, isLoadingFacts, isRTL, tr);
 
     document.getElementById('dash-panel').innerHTML = html;
 
-    // Draw charts after DOM is ready (lazy load Chart.js first)
+    // Async: inject prayer times
+    injectPrayerTimes(town.lat, town.lon, tr);
+
+    // Draw charts after DOM is ready
     loadChartJs().then(() => {
         setTimeout(() => drawCharts(d), 80);
     });
@@ -943,7 +1106,6 @@ function buildBasemapControl() {
                     </ul>
                 </div>`;
 
-            // Wire up events without inline onclick
             wrap.querySelector('#basemap-toggle-btn').addEventListener('click', e => {
                 e.stopPropagation();
                 const dd  = wrap.querySelector('#basemap-dropdown');
@@ -997,7 +1159,7 @@ function buildLegend() {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   REGION SELECT (desktop + mobile)
+   REGION SELECT
    ═══════════════════════════════════════════════════════════ */
 
 function buildSelect(selectedKey) {
@@ -1042,6 +1204,8 @@ function setLang(lang) {
     document.getElementById('btn-en').setAttribute('aria-pressed', lang === 'en');
     document.getElementById('btn-ar').setAttribute('aria-pressed', lang === 'ar');
 
+    updateCookieBannerLang();
+
     const key = document.getElementById('region-select').value;
     buildSelect(key);
     buildLegend();
@@ -1068,7 +1232,7 @@ function setLang(lang) {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   UNIT TOGGLE (syncs desktop + mobile buttons)
+   UNIT TOGGLE
    ═══════════════════════════════════════════════════════════ */
 
 function setUnit(u) {
@@ -1097,7 +1261,7 @@ function toggleTheme() {
     const btn = document.getElementById('themeBtn');
     if (btn) {
         btn.textContent = isDark ? '🌙' : '☀️';
-        btn.focus();   // preserve keyboard focus
+        btn.focus();
     }
     if (lastTown && lastReading) {
         const cachedFacts = factsCache.get(`${lastTown.name}-${T.en.regions[currentRegionKey]}-${currentLang}`);
@@ -1127,7 +1291,7 @@ function initMap() {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   UPDATE VIEW (fetch + plot markers)
+   UPDATE VIEW
    ═══════════════════════════════════════════════════════════ */
 
 async function updateView(regionKey, isInitial = false) {
@@ -1171,7 +1335,6 @@ async function updateView(regionKey, isInitial = false) {
     let done  = 0;
     const total = towns.length;
 
-    // Batched fetching — max FETCH_CONCURRENCY at a time
     await fetchInBatches(towns, town =>
         fetchWttr(town)
             .then(raw => {
@@ -1188,14 +1351,12 @@ async function updateView(regionKey, isInitial = false) {
                     icon: makeTempIcon(tmpVal, color)
                 }).addTo(markersLayer);
 
-                // Accessibility label
                 marker.getElement && setTimeout(() => {
                     const el = marker.getElement();
                     if (el) el.setAttribute('aria-label',
                         `${town.name}: ${reading.temp}°C, ${reading.condition || ''}`);
                 }, 50);
 
-                // Lightweight popup
                 marker.bindPopup(`
                     <div style="min-width:140px;font-size:12px;direction:${currentLang === 'ar' ? 'rtl' : 'ltr'}">
                         <b style="color:var(--accent-dark)">${currentLang === 'ar' ? town.nameAr : town.name}</b><br>
@@ -1205,15 +1366,12 @@ async function updateView(regionKey, isInitial = false) {
                         <span style="font-size:10px;color:#94a3b8">${currentLang === 'ar' ? 'انقر للتفاصيل ←' : 'Click for full details →'}</span>
                     </div>`, { maxWidth: 200 });
 
-                // Click → full dashboard
                 marker.on('click', async () => {
-                    // Deactivate previous active marker
                     if (activeMarkerEl) {
                         activeMarkerEl.style.boxShadow = '';
                         activeMarkerEl.style.animation = '';
                     }
 
-                    // Activate this marker
                     setTimeout(() => {
                         const el = marker.getElement()?.querySelector('div');
                         if (el) {
@@ -1226,7 +1384,6 @@ async function updateView(regionKey, isInitial = false) {
                     lastTown    = town;
                     lastReading = reading;
 
-                    // Show skeleton immediately for perceived speed
                     showDashboardSkeleton();
 
                     const cachedFacts = factsCache.get(`${town.name}-${T.en.regions[regionKey]}-${currentLang}`);
@@ -1247,7 +1404,6 @@ async function updateView(regionKey, isInitial = false) {
                         }
                     }
 
-                    // Mobile: skip popup, scroll straight to dashboard
                     if (window.innerWidth < 1024) {
                         marker.closePopup();
                         document.getElementById('dash-panel')
@@ -1260,7 +1416,6 @@ async function updateView(regionKey, isInitial = false) {
                 lProg.textContent = `${done} / ${total}`;
                 const pct = Math.round(done / total * 100);
                 lBar.style.width  = `${pct}%`;
-                // Show error marker (⚠)
                 const errMarker = L.marker([town.lat, town.lon], {
                     icon: L.divIcon({
                         className: '',
@@ -1285,20 +1440,19 @@ async function updateView(regionKey, isInitial = false) {
     lastFetchTime = Date.now();
     updateFreshnessLabel();
 
-    // Start freshness ticker
     if (freshnessInterval) clearInterval(freshnessInterval);
     freshnessInterval = setInterval(updateFreshnessLabel, 60000);
 }
 
 /* ═══════════════════════════════════════════════════════════
-   BOOT — wire event listeners, handle URL params
+   BOOT
    ═══════════════════════════════════════════════════════════ */
 
 window.onload = () => {
     buildSelect('DOHA');
     initMap();
+    initCookieConsent();
 
-    // Button event listeners (no inline onclick)
     document.getElementById('btn-en').addEventListener('click', () => setLang('en'));
     document.getElementById('btn-ar').addEventListener('click', () => setLang('ar'));
     document.getElementById('btnC').addEventListener('click',   () => setUnit('C'));
@@ -1318,7 +1472,6 @@ window.onload = () => {
     if (btnCm) btnCm.addEventListener('click', () => setUnit('C'));
     if (btnFm) btnFm.addEventListener('click', () => setUnit('F'));
 
-    // Read URL params for deep-linking (e.g. ?lang=ar&reg=KHOR)
     const params = new URLSearchParams(location.search);
     if (params.get('lang') === 'ar') setLang('ar');
     const reg = params.get('reg');

@@ -4,7 +4,8 @@
    Enhancements: skeleton, toast, alert banner, share button,
      mobile bottom bar, marker pulse, bottom-sheet mobile UX,
      hourly scroll hint, geo button spin, refresh button,
-     improved mobile responsive breakpoints
+     cookie consent banner, prayer times grid, heat stress card,
+     branded loading spinner, footer nav, static page styles
    by mohammedlglg
    ============================================================= */
 
@@ -101,6 +102,45 @@ body.ar { font-family: 'Noto Sans Arabic', 'Plus Jakarta Sans', sans-serif; }
 .alert-dismiss:hover { opacity: 1; background: rgba(0,0,0,0.08); }
 html[dir="rtl"] .alert-dismiss { margin-left: 0; margin-right: auto; }
 
+/* ── COOKIE CONSENT BANNER ─────────────────────────────────── */
+.cookie-banner {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 9990;
+    background: var(--card); border-top: 1px solid var(--border);
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.12);
+    animation: slideUp .4s cubic-bezier(.4,0,.2,1) both;
+    display: flex; align-items: center; justify-content: center;
+}
+.cookie-banner.cookie-hide {
+    animation: slideDown .35s cubic-bezier(.4,0,.2,1) both;
+}
+.cookie-inner {
+    max-width: 900px; width: 100%;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 20px; padding: 16px 24px; flex-wrap: wrap;
+}
+.cookie-text {
+    display: flex; align-items: flex-start; gap: 12px; flex: 1;
+}
+.cookie-icon   { font-size: 22px; flex-shrink: 0; margin-top: 1px; }
+.cookie-text strong { display: block; font-size: 14px; margin-bottom: 3px; }
+.cookie-text p  { font-size: 12px; color: var(--txt2); margin: 0; line-height: 1.5; }
+.cookie-text a  { color: var(--accent); text-decoration: underline; }
+.cookie-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.cookie-btn {
+    padding: 8px 18px; border-radius: var(--radius-sm);
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    font-family: inherit; transition: var(--transition);
+}
+.cookie-accept  {
+    background: var(--accent); color: #fff; border: 1px solid var(--accent);
+}
+.cookie-accept:hover  { background: var(--accent-dark); }
+.cookie-decline {
+    background: transparent; color: var(--txt2);
+    border: 1px solid var(--border);
+}
+.cookie-decline:hover { border-color: var(--border-hover); color: var(--txt); }
+
 /* ── NAVBAR ────────────────────────────────────────────────── */
 .navbar {
     position: sticky; top: 0; z-index: 200;
@@ -173,7 +213,7 @@ html[dir="rtl"] .alert-dismiss { margin-left: 0; margin-right: auto; }
 .geo-btn { min-width: 36px; justify-content: center; padding: 7px 10px; }
 .geo-btn.spinning svg   { animation: spin .8s linear infinite; }
 
-/* Refresh button (map footer) */
+/* Refresh button */
 .refresh-btn {
     margin-left: auto; background: none; border: none;
     cursor: pointer; color: var(--txt3); display: flex;
@@ -187,11 +227,9 @@ html[dir="rtl"] .refresh-btn { margin-left: 0; margin-right: auto; }
 .mobile-bar { display: none; }
 
 @media (max-width: 640px) {
-    /* Hide region + unit controls from navbar on mobile */
     .nav-actions .region-wrap,
     .nav-actions .unit-wrap { display: none; }
 
-    /* Show mobile bottom bar */
     .mobile-bar {
         display: flex; align-items: center; justify-content: space-between;
         gap: 10px; padding: 8px 16px;
@@ -226,17 +264,40 @@ html[dir="rtl"] .refresh-btn { margin-left: 0; margin-right: auto; }
     display: flex; align-items: center; gap: 6px;
 }
 
-/* Loading overlay */
+/* ── BRANDED LOADING SPINNER ───────────────────────────────── */
 .loading-overlay {
     position: absolute; top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(255,255,255,0.82);
     z-index: 1000;
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
-    gap: 10px; font-weight: 700; color: var(--accent);
+    gap: 14px; font-weight: 700; color: var(--accent);
     backdrop-filter: blur(4px);
 }
 [data-theme="dark"] .loading-overlay { background: rgba(22,32,50,0.82); }
+
+/* Brand spinner: pulsing ring + weather icon */
+.brand-spinner {
+    position: relative;
+    width: 56px; height: 56px;
+    display: flex; align-items: center; justify-content: center;
+}
+.bs-ring {
+    position: absolute; inset: 0;
+    border-radius: 50%;
+    border: 3px solid var(--accent-light);
+    border-top-color: var(--accent);
+    animation: spin .9s linear infinite;
+}
+.bs-icon {
+    font-size: 22px;
+    animation: bsIconPulse 1.8s ease-in-out infinite;
+    filter: drop-shadow(0 1px 4px rgba(5,150,105,0.3));
+}
+@keyframes bsIconPulse {
+    0%,100% { transform: scale(1); opacity: 1; }
+    50%     { transform: scale(1.12); opacity: .8; }
+}
 
 .loading-progress { font-size: 12px; color: var(--txt2); font-weight: 400; }
 .loading-bar-track { width: 180px; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
@@ -359,7 +420,6 @@ html[dir="rtl"] .hero-weather-icon {
     filter: drop-shadow(0 3px 6px rgba(0,0,0,0.2));
 }
 
-/* Share button inside hero */
 .share-btn {
     position: absolute; bottom: 20px; right: 20px;
     background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.35);
@@ -405,7 +465,7 @@ html[dir="rtl"] .share-btn { right: auto; left: 20px; }
 }
 .sec-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-/* ── HOURLY STRIP — with scroll hint fade ──────────────────── */
+/* ── HOURLY STRIP ──────────────────────────────────────────── */
 .hourly-scroll {
     display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px;
     scrollbar-width: thin; scrollbar-color: var(--border) transparent;
@@ -471,8 +531,41 @@ html[dir="rtl"] .hourly-scroll {
 .d-bar   { height: 4px; border-radius: 2px; background: var(--bg); margin-top: 8px; overflow: hidden; }
 .d-bar-fill { height: 100%; border-radius: 2px; transition: width .8s cubic-bezier(.4,0,.2,1); }
 
+/* Heat stress card accent */
+.heat-stress-card { border-left: 3px solid var(--warm); }
+html[dir="rtl"] .heat-stress-card { border-left: none; border-right: 3px solid var(--warm); }
+
 /* ── PROBABILITY ───────────────────────────────────────────── */
 .prob-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+
+/* ── PRAYER TIMES ──────────────────────────────────────────── */
+.prayer-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+.prayer-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 12px 10px; text-align: center;
+    box-shadow: var(--shadow); transition: var(--transition);
+    position: relative;
+}
+.prayer-card:hover { transform: translateY(-1px); box-shadow: var(--shadow-hover); }
+.prayer-card.prayer-next {
+    border-color: var(--accent);
+    background: linear-gradient(135deg, var(--accent-light), var(--card));
+}
+.prayer-card.prayer-past { opacity: .6; }
+.prayer-icon  { font-size: 20px; margin-bottom: 5px; }
+.prayer-label { font-size: 10px; color: var(--txt3); text-transform: uppercase; letter-spacing: .5px; font-weight: 600; }
+.prayer-time  { font-size: 16px; font-weight: 800; margin-top: 3px; color: var(--txt); }
+.prayer-badge {
+    position: absolute; top: -7px; left: 50%; transform: translateX(-50%);
+    background: var(--accent); color: #fff;
+    font-size: 9px; font-weight: 700; padding: 2px 7px;
+    border-radius: 10px; white-space: nowrap; letter-spacing: .03em;
+}
+.prayer-card.prayer-next .prayer-time { color: var(--accent-dark); }
+[data-theme="dark"] .prayer-card.prayer-next .prayer-time { color: var(--accent); }
 
 /* ── ASTRO ─────────────────────────────────────────────────── */
 .astro-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -508,7 +601,7 @@ html[dir="rtl"] .hourly-scroll {
 
 /* ── TOAST ─────────────────────────────────────────────────── */
 .toast {
-    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+    position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px);
     background: var(--txt); color: var(--bg);
     padding: 10px 20px; border-radius: 99px;
     font-size: 13px; font-weight: 600;
@@ -519,20 +612,92 @@ html[dir="rtl"] .hourly-scroll {
 
 /* ── FOOTER ────────────────────────────────────────────────── */
 .footer {
-    max-width: 1200px; margin: 0 auto; padding: 20px 24px 40px;
+    max-width: 1200px; margin: 0 auto; padding: 24px 24px 80px;
     border-top: 1px solid var(--border);
-    display: flex; justify-content: space-between; align-items: center;
-    flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--txt3);
 }
-.footer a   { color: var(--accent); text-decoration: none; }
-.sig-badge  { display: flex; align-items: center; gap: 4px; font-size: 11px; }
+.footer-top {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 12px; margin-bottom: 16px;
+}
+.footer-brand {
+    display: flex; align-items: center; gap: 8px;
+    color: var(--txt2);
+}
+.footer-nav { display: flex; gap: 20px; }
+.footer-nav a {
+    font-size: 13px; color: var(--txt2); text-decoration: none;
+    font-weight: 500; transition: var(--transition);
+}
+.footer-nav a:hover { color: var(--accent); }
+.footer-bottom {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    flex-wrap: wrap; gap: 8px; font-size: 11px; color: var(--txt3);
+}
+.footer-data a { color: var(--accent); text-decoration: none; }
+.footer-disclaimer { font-style: italic; opacity: .8; }
+.sig-badge  { display: flex; align-items: center; gap: 4px; font-size: 11px; flex-shrink: 0; }
 .sig-badge span { color: var(--accent); font-weight: 700; }
+
+/* ── STATIC PAGES (About, Privacy, Contact) ────────────────── */
+.static-wrap {
+    max-width: 760px; margin: 0 auto; padding: 40px 24px 80px;
+}
+.static-hero {
+    text-align: center; padding: 40px 0 32px;
+    border-bottom: 1px solid var(--border); margin-bottom: 36px;
+}
+.static-hero .sh-icon { font-size: 40px; margin-bottom: 12px; }
+.static-hero h1 { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
+.static-hero p  { font-size: 14px; color: var(--txt2); max-width: 480px; margin: 0 auto; line-height: 1.6; }
+
+.static-section { margin-bottom: 32px; }
+.static-section h2 {
+    font-size: 16px; font-weight: 700;
+    margin-bottom: 12px; color: var(--txt);
+    display: flex; align-items: center; gap: 8px;
+}
+.static-section h2::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+}
+.static-section p,
+.static-section li {
+    font-size: 13px; color: var(--txt2); line-height: 1.75; margin-bottom: 8px;
+}
+.static-section ul { padding-left: 20px; }
+.static-section a  { color: var(--accent); }
+
+.contact-form { display: flex; flex-direction: column; gap: 14px; }
+.form-group   { display: flex; flex-direction: column; gap: 5px; }
+.form-group label {
+    font-size: 12px; font-weight: 600; color: var(--txt2);
+    text-transform: uppercase; letter-spacing: .4px;
+}
+.form-group input,
+.form-group textarea,
+.form-group select {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 10px 14px;
+    font-size: 13px; font-family: inherit; color: var(--txt);
+    outline: none; transition: var(--transition);
+    width: 100%;
+}
+.form-group input:focus,
+.form-group textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-light); }
+.form-group textarea { resize: vertical; min-height: 120px; }
+.form-submit {
+    background: var(--accent); color: #fff;
+    border: none; border-radius: var(--radius-sm); padding: 12px 28px;
+    font-size: 14px; font-weight: 700; cursor: pointer;
+    font-family: inherit; transition: var(--transition); align-self: flex-start;
+}
+.form-submit:hover { background: var(--accent-dark); }
 
 /* ── ANIMATIONS ────────────────────────────────────────────── */
 @keyframes fadeUp    { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
 @keyframes pulse     { 0%,100% { opacity:1; } 50% { opacity:.4; } }
 @keyframes spin      { to { transform: rotate(360deg); } }
-@keyframes slideDown { from { transform:translateY(-100%); opacity:0; } to { transform:translateY(0); opacity:1; } }
+@keyframes slideDown { from { transform:translateY(0); opacity:1; } to { transform:translateY(100%); opacity:0; } }
+@keyframes slideUp   { from { transform:translateY(100%); opacity:0; } to { transform:translateY(0); opacity:1; } }
 @keyframes markerPulse {
     0%,100% { box-shadow: 0 0 0 3px #fff, 0 0 0 5px currentColor; }
     50%     { box-shadow: 0 0 0 3px #fff, 0 0 0 8px currentColor; opacity:.85; }
@@ -549,6 +714,7 @@ html[dir="rtl"] .hourly-scroll {
 /* ── RTL OVERRIDES ─────────────────────────────────────────── */
 html[dir="rtl"] .sec-title        { direction: rtl; }
 html[dir="rtl"] .map-legend .l-row { flex-direction: row-reverse; }
+html[dir="rtl"] .footer-nav       { flex-direction: row-reverse; }
 
 /* ── RESPONSIVE ────────────────────────────────────────────── */
 @media (max-width: 1024px) {
@@ -565,10 +731,12 @@ html[dir="rtl"] .map-legend .l-row { flex-direction: row-reverse; }
     .astro-row      { grid-template-columns: 1fr; }
     .two-col        { grid-template-columns: 1fr; }
     .prob-grid      { grid-template-columns: 1fr 1fr; }
+    .prayer-grid    { grid-template-columns: repeat(3, 1fr); }
     .hero-temp      { font-size: 52px; }
     .app-wrap       { padding: 12px 12px 40px; }
     .split-layout   { gap: 12px; }
     .hero-card      { padding: 20px; }
+    .cookie-inner   { padding: 12px 16px; gap: 12px; }
 }
 
 @media (max-width: 420px) {
@@ -578,4 +746,6 @@ html[dir="rtl"] .map-legend .l-row { flex-direction: row-reverse; }
     .forecast-grid  { grid-template-columns: 1fr 1fr; }
     .details-grid   { grid-template-columns: 1fr 1fr; }
     .prob-grid      { grid-template-columns: 1fr 1fr; }
+    .prayer-grid    { grid-template-columns: repeat(2, 1fr); }
+    .cookie-actions { flex-direction: row; width: 100%; justify-content: flex-end; }
 }

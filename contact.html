@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Contact Qatar Live Weather — send feedback, report bugs, or suggest features.">
+    <meta name="robots" content="index, follow">
+    <title>Contact — Qatar Live Weather</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
+        <div class="nav-inner">
+            <a class="nav-brand" href="index.html" style="text-decoration:none">
+                <svg class="brand-icon" width="22" height="22" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                     aria-hidden="true">
+                    <path d="M12 2v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="M2 12h2"/>
+                    <path d="m4.93 19.07 1.41-1.41"/><path d="M12 20v2"/>
+                    <path d="m19.07 19.07-1.41-1.41"/><path d="M22 12h-2"/>
+                    <path d="m19.07 4.93-1.41 1.41"/><circle cx="12" cy="12" r="4"/>
+                </svg>
+                <span>Qatar Live Weather</span>
+            </a>
+            <div class="nav-actions">
+                <a href="index.html" class="icon-btn" style="text-decoration:none">← Back to Map</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="static-wrap">
+
+        <div class="static-hero">
+            <div class="sh-icon">✉️</div>
+            <h1>Get in Touch</h1>
+            <p>Found a bug, have a feature suggestion, or just want to say hello? We'd love to hear from you.</p>
+        </div>
+
+        <div class="static-section">
+            <h2>Send a Message</h2>
+            <p>Fill in the form below and we'll get back to you as soon as possible. Alternatively, you can reach out directly via GitHub.</p>
+            <form class="contact-form" action="mailto:contact@qatarliveweather.com" method="get" enctype="text/plain">
+                <div class="form-group">
+                    <label for="cf-name">Your Name</label>
+                    <input type="text" id="cf-name" name="name" placeholder="e.g. Ahmed Al-Mansouri" autocomplete="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="cf-email">Email Address</label>
+                    <input type="email" id="cf-email" name="email" placeholder="you@example.com" autocomplete="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="cf-subject">Subject</label>
+                    <select id="cf-subject" name="subject">
+                        <option value="Bug Report">🐛 Bug Report</option>
+                        <option value="Feature Request">💡 Feature Request</option>
+                        <option value="Data Error">🌡️ Incorrect Weather Data</option>
+                        <option value="Partnership">🤝 Partnership / Advertising</option>
+                        <option value="General">💬 General Inquiry</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="cf-msg">Message</label>
+                    <textarea id="cf-msg" name="body" placeholder="Tell us what's on your mind..." required></textarea>
+                </div>
+                <button type="submit" class="form-submit">Send Message →</button>
+            </form>
+        </div>
+
+        <div class="static-section">
+            <h2>Other Ways to Reach Us</h2>
+            <ul>
+                <li>
+                    <strong>GitHub</strong> — open an issue or pull request at
+                    <a href="https://github.com/mohammedlglg/qatar-live-weather" target="_blank" rel="noopener">
+                        github.com/mohammedlglg/qatar-live-weather →
+                    </a>
+                </li>
+                <li>
+                    <strong>Twitter / X</strong> — follow
+                    <a href="https://twitter.com/QatarLiveWX" target="_blank" rel="noopener">@QatarLiveWX</a>
+                    for weather updates and announcements.
+                </li>
+            </ul>
+        </div>
+
+        <div class="static-section">
+            <h2>Data Corrections</h2>
+            <p>Weather data on this site comes from <a href="https://wttr.in" target="_blank" rel="noopener">wttr.in</a>. If you notice consistently incorrect readings for a specific location, please let us know the location name, the incorrect reading, and the correct expected value — we'll investigate whether the issue is with our coordinates or the upstream data source.</p>
+        </div>
+
+    </div>
+
+    <footer class="footer" role="contentinfo">
+        <div class="footer-top">
+            <div class="footer-brand">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent)" aria-hidden="true">
+                    <path d="M12 2v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="M2 12h2"/><path d="m4.93 19.07 1.41-1.41"/><path d="M12 20v2"/><path d="m19.07 19.07-1.41-1.41"/><path d="M22 12h-2"/><path d="m19.07 4.93-1.41 1.41"/><circle cx="12" cy="12" r="4"/>
+                </svg>
+                <span style="font-weight:700;font-size:14px">Qatar Live Weather</span>
+            </div>
+            <nav class="footer-nav" aria-label="Footer navigation">
+                <a href="index.html">Home</a>
+                <a href="about.html">About</a>
+                <a href="privacy.html">Privacy Policy</a>
+                <a href="contact.html">Contact</a>
+            </nav>
+        </div>
+        <div class="footer-bottom">
+            <span>© 2026 Qatar Live Weather. All rights reserved.</span>
+            <div class="sig-badge">by <span>mohammedlglg</span></div>
+        </div>
+    </footer>
+
+</body>
+</html>

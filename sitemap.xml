@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+    <!-- Main map page -->
+    <url>
+        <loc>https://mohammedlglg.github.io/qatar-live-weather/</loc>
+        <lastmod>2026-04-01</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>1.0</priority>
+        <xhtml:link rel="alternate" hreflang="en" href="https://mohammedlglg.github.io/qatar-live-weather/"/>
+        <xhtml:link rel="alternate" hreflang="ar" href="https://mohammedlglg.github.io/qatar-live-weather/?lang=ar"/>
+    </url>
+
+    <!-- Region deep-links (English) -->
+    <url>
+        <loc>https://mohammedlglg.github.io/qatar-live-weather/?reg=DOHA&amp;lang=en</loc>
+        <lastmod>2026-04-01</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.9</priority>
+    </url>
+    <url>
+        <loc>https://mohammedlglg.github.io/qatar-live-weather/?reg=RAYYAN&amp;lang=en</loc>
+        <lastmod>2026-04-01</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>https://mohammedlglg.github.io/qatar-live-weather/?reg=WAKRAH&amp;lang=en</loc>
+        <lastmod>2026-04-01</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>https://mohammedlglg.github.io/qatar-live-weather/?reg=KHOR&amp;lang=en</loc>
+        <lastmod>2026-04-01</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.7</priority>
+    </url>
+    <url>
+        <loc>https://mohammedlglg.github.io/qatar-live-weather/?reg=SHAMAL&amp;lang=en</loc>
+        <lastmod>2026-04-01</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.7</priority>
+    </url>
+    <url>
+        <loc>https://mohammedlglg.github.io/qatar-live-weather/?reg=SHEEHANIYA&amp;lang=en</loc>
+        <lastmod>2026-04-01</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.7</priority>
+    </url>
+    <url>
+        <loc>https://mohammedlglg.github.io/qatar-live-weather/?reg=DAAYEN&amp;lang=en</loc>
+        <lastmod>2026-04-01</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.7</priority>
+    </url>
+
+    <!-- Region deep-links (Arabic) -->
+    <url>
+        <loc>https://mohammedlglg.github.io/qatar-live-weather/?reg=DOHA&amp;lang=ar</loc>
+        <lastmod>2026-04-01</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.9</priority>
+    </url>
+
+    <!-- Static pages -->
+    <url>
+        <loc>https://mohammedlglg.github.io/qatar-live-weather/about.html</loc>
+        <lastmod>2026-04-01</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.6</priority>
+    </url>
+    <url>
+        <loc>https://mohammedlglg.github.io/qatar-live-weather/privacy.html</loc>
+        <lastmod>2026-04-01</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.5</priority>
+    </url>
+    <url>
+        <loc>https://mohammedlglg.github.io/qatar-live-weather/contact.html</loc>
+        <lastmod>2026-04-01</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.5</priority>
+    </url>
+
+</urlset>
