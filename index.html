@@ -216,13 +216,13 @@
                     <path d="m19.07 19.07-1.41-1.41"/><path d="M22 12h-2"/>
                     <path d="m19.07 4.93-1.41 1.41"/><circle cx="12" cy="12" r="4"/>
                 </svg>
-                <span id="nav-title">Qatar Live Weather</span>
+                <h1 class="nav-brand-title" id="nav-title" style="font-size:inherit;font-weight:inherit;margin:0;display:inline">Qatar Live Weather</h1>
             </div>
             <div class="nav-actions">
                 <!-- Language pill -->
                 <div class="lang-pill" role="group" aria-label="Language selector">
-                    <button id="btn-en" class="lang-btn active" aria-pressed="true">EN</button>
-                    <button id="btn-ar" class="lang-btn" aria-pressed="false">ع</button>
+                    <button id="btn-en" class="lang-btn active" aria-pressed="true" aria-label="Switch to English">EN</button>
+                    <button id="btn-ar" class="lang-btn" aria-pressed="false" aria-label="Switch to Arabic">ع</button>
                 </div>
                 <!-- Region selector -->
                 <div class="region-wrap">
@@ -242,7 +242,7 @@
                     </svg>
                 </button>
                 <!-- Theme toggle -->
-                <button class="icon-btn" id="themeBtn" aria-label="Toggle dark mode">🌙</button>
+                <button class="icon-btn" id="themeBtn" aria-label="Switch to dark mode" aria-pressed="false">🌙</button>
             </div>
         </div>
     </nav>
@@ -260,6 +260,7 @@
     </div>
 
     <!-- ── MAIN LAYOUT ─────────────────────────────────────────── -->
+    <main id="main-content">
     <div class="app-wrap">
         <div class="split-layout">
 
@@ -404,6 +405,7 @@
 
         </div>
     </section>
+    </main>
 
     <!-- ── FOOTER ─────────────────────────────────────────────── -->
     <footer class="footer" role="contentinfo">

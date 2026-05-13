@@ -152,7 +152,7 @@ async function fetchPrayerTimes(lat, lon) {
 
 function renderPrayerTimes(timings, tr) {
     if (!timings) {
-        return `<div class="sec-title animate-in" style="animation-delay:.38s">${tr.prayerTimes}</div>
+        return `<h2 class="sec-title animate-in" style="animation-delay:.38s">${tr.prayerTimes}</h2>
         <div class="chart-card animate-in" style="animation-delay:.40s">
             <p style="font-size:12px;color:var(--txt3)">${tr.prayerError}</p>
         </div>`;
@@ -178,7 +178,7 @@ function renderPrayerTimes(timings, tr) {
     if (nextIdx === -1) nextIdx = 0; // wrap to Fajr
     const prevIdx = (nextIdx - 1 + prayers.length) % prayers.length;
 
-    let html = `<div class="sec-title animate-in" style="animation-delay:.38s">${tr.prayerTimes}</div>
+    let html = `<h2 class="sec-title animate-in" style="animation-delay:.38s">${tr.prayerTimes}</h2>
     <div class="prayer-grid animate-in" style="animation-delay:.40s">`;
 
     prayers.forEach((p, i) => {
@@ -679,9 +679,20 @@ function renderHero(d, tr, isRTL, name, rName, regionKey, town) {
     const dateStr = now.toLocaleDateString(isRTL ? 'ar' : 'en', {
         weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
     });
+    // Bug 4: When region is ALL, determine the real region from DATA_POINTS
+    let displayRegion = rName;
+    if (regionKey === 'ALL') {
+        for (const [key, arr] of Object.entries(DATA_POINTS)) {
+            if (key === 'ALL') continue;
+            if (arr.some(t => t.lat === town.lat && t.lon === town.lon)) {
+                displayRegion = tr.regions[key] || rName;
+                break;
+            }
+        }
+    }
     return `<div class="hero-card animate-in">
         <div>
-            <div class="hero-loc">${rName}, Qatar</div>
+            <div class="hero-loc">${displayRegion}, Qatar</div>
             <div class="hero-city">${name}</div>
             <div class="hero-date">${dateStr}</div>
             ${isRTL ? `<div class="hero-weather-icon" aria-hidden="true">${d.icon}</div>` : ''}
@@ -747,7 +758,7 @@ function renderQuickStats(d, tr) {
 }
 
 function renderHourly(d, hIdx, tr) {
-    let html = `<div class="sec-title animate-in" style="animation-delay:.08s">${tr.hourly}</div>
+    let html = `<h2 class="sec-title animate-in" style="animation-delay:.08s">${tr.hourly}</h2>
     <div class="hourly-scroll animate-in" style="animation-delay:.1s" role="list">`;
     d.hourly.forEach((h, i) => {
         const isNow = (i === hIdx);
@@ -762,7 +773,7 @@ function renderHourly(d, hIdx, tr) {
 }
 
 function renderForecast(d, tr) {
-    let html = `<div class="sec-title animate-in" style="animation-delay:.12s">${tr.forecast}</div>
+    let html = `<h2 class="sec-title animate-in" style="animation-delay:.12s">${tr.forecast}</h2>
     <div class="forecast-grid animate-in" style="animation-delay:.14s">`;
     d.forecast.forEach(f => {
         html += `<div class="day-card">
@@ -786,7 +797,7 @@ function renderForecast(d, tr) {
 
 function renderConditions(d, ch, tr) {
     const vis = +d.visibility;
-    return `<div class="sec-title animate-in" style="animation-delay:.16s">${tr.conditions}</div>
+    return `<h2 class="sec-title animate-in" style="animation-delay:.16s">${tr.conditions}</h2>
     <div class="details-grid animate-in" style="animation-delay:.18s">
         ${renderHeatStress(d, tr)}
         <div class="d-card">
@@ -838,7 +849,7 @@ function renderProbability(ch, tr) {
         { i:'❄️',  l:'Snow',     v: ch.chanceofsnow     || 0, c:'var(--info)'   },
         { i:'🥶',  l:'Frost',    v: 0,                        c:'#06b6d4'       }
     ];
-    let html = `<div class="sec-title animate-in" style="animation-delay:.2s">${tr.probability}</div>
+    let html = `<h2 class="sec-title animate-in" style="animation-delay:.2s">${tr.probability}</h2>
     <div class="prob-grid animate-in" style="animation-delay:.22s">`;
     probs.forEach(p => {
         html += `<div class="d-card">
@@ -851,7 +862,7 @@ function renderProbability(ch, tr) {
 }
 
 function renderAstro(d, moonEmoji, tr) {
-    let html = `<div class="sec-title animate-in" style="animation-delay:.24s">${tr.sunMoon}</div>
+    let html = `<h2 class="sec-title animate-in" style="animation-delay:.24s">${tr.sunMoon}</h2>
     <div class="astro-row animate-in" style="animation-delay:.26s">`;
 
     if (d.sunrise || d.sunset) {
@@ -902,7 +913,7 @@ function renderAstro(d, moonEmoji, tr) {
 }
 
 function renderChartSection(d, tr) {
-    return `<div class="sec-title animate-in" style="animation-delay:.28s">${tr.tempTrend}</div>
+    return `<h2 class="sec-title animate-in" style="animation-delay:.28s">${tr.tempTrend}</h2>
     <div class="chart-card animate-in" style="animation-delay:.3s">
         <div style="position:relative;height:200px"><canvas id="tempChart" aria-label="Temperature trend chart"></canvas></div>
     </div>
@@ -934,7 +945,9 @@ function renderChartSection(d, tr) {
 }
 
 function renderFacts(facts, isLoadingFacts, isRTL, tr) {
-    return `<div class="sec-title animate-in" style="animation-delay:.34s">${tr.quickFacts}</div>
+    // Bug 5: Don't render the card at all if there's no real content and not loading
+    if (!facts && !isLoadingFacts) return '';
+    return `<h2 class="sec-title animate-in" style="animation-delay:.34s">${tr.quickFacts}</h2>
     <div class="chart-card animate-in" style="animation-delay:.36s">
         <div style="font-size:11px;color:var(--txt3);margin-bottom:6px;font-style:italic">${tr.wikiSource}</div>
         <p id="facts-para"
@@ -984,7 +997,7 @@ function renderDashboard(town, reading, moonEmoji, facts, isLoadingFacts, region
         renderChartSection(d, tr) +
         // Prayer times placeholder (loaded async)
         `<div id="prayer-section" class="animate-in" style="animation-delay:.38s">
-            <div class="sec-title">${tr.prayerTimes}</div>
+            <h2 class="sec-title">${tr.prayerTimes}</h2>
             <div class="chart-card">
                 <p style="font-size:12px;color:var(--txt3);font-style:italic">${tr.prayerLoading}</p>
             </div>
@@ -1145,11 +1158,15 @@ function buildLegend() {
             const div = L.DomUtil.create('div', 'map-legend');
             div.setAttribute('aria-label', 'Temperature colour legend');
             const t   = T[currentLang].tempLegend;
+            // Bug 2: use °F ranges when °F is active; Bug 3: wrap labels in dir="ltr"
+            const rows = currentUnit === 'F'
+                ? [[105,'> 104°F'],[97,'97–104°F'],[88,'88–95°F'],[79,'79–86°F'],[0,'< 79°F']]
+                : [[41,'> 40°C'],[36,'36–40°C'],[31,'31–35°C'],[26,'26–30°C'],[0,'< 26°C']];
             div.innerHTML = `<div class="l-title">${t}</div>` +
-                [[41,'> 40°'],[36,'36–40°'],[31,'31–35°'],[26,'26–30°'],[0,'< 26°']].map(([v, lbl]) =>
+                rows.map(([v, lbl]) =>
                     `<div class="l-row">
-                        <span class="l-dot" style="background:${getColor(v)}"></span>
-                        <span style="font-size:11px">${lbl}</span>
+                        <span class="l-dot" style="background:${getColor(currentUnit === 'F' ? Math.round((v - 32) * 5 / 9) : v)}"></span>
+                        <span dir="ltr" style="font-size:11px">${lbl}</span>
                     </div>`
                 ).join('');
             return div;
@@ -1185,6 +1202,7 @@ function buildSelect(selectedKey) {
 
 function setLang(lang) {
     currentLang = lang;
+    localStorage.setItem('pref_lang', lang); // Bug 6: persist
     const html  = document.documentElement;
     html.lang   = lang;
     html.dir    = lang === 'ar' ? 'rtl' : 'ltr';
@@ -1201,8 +1219,17 @@ function setLang(lang) {
     if (ht) ht.textContent = t.hintTxt;
     if (hs) hs.textContent = t.hintSub;
 
-    document.getElementById('btn-en').setAttribute('aria-pressed', lang === 'en');
-    document.getElementById('btn-ar').setAttribute('aria-pressed', lang === 'ar');
+    // Bug 10: set aria-pressed AND aria-label on language buttons
+    const btnEn = document.getElementById('btn-en');
+    const btnAr = document.getElementById('btn-ar');
+    if (btnEn) {
+        btnEn.setAttribute('aria-pressed', lang === 'en');
+        btnEn.setAttribute('aria-label', 'Switch to English');
+    }
+    if (btnAr) {
+        btnAr.setAttribute('aria-pressed', lang === 'ar');
+        btnAr.setAttribute('aria-label', 'Switch to Arabic');
+    }
 
     updateCookieBannerLang();
 
@@ -1237,6 +1264,7 @@ function setLang(lang) {
 
 function setUnit(u) {
     currentUnit = u;
+    localStorage.setItem('pref_unit', u); // Bug 6: persist
     ['btnC','btnF','btnCm','btnFm'].forEach(id => {
         const btn = document.getElementById(id);
         if (!btn) return;
@@ -1244,6 +1272,33 @@ function setUnit(u) {
         btn.classList.toggle('active', isActive);
         btn.setAttribute('aria-pressed', isActive);
     });
+    // Bug 1: re-render all marker icons to show the new unit value
+    markersLayer && markersLayer.eachLayer(layer => {
+        if (layer._reading) {
+            const r       = layer._reading;
+            const tmpVal  = r.temp ?? 0;
+            const color   = getColor(tmpVal);
+            const dispVal = u === 'F' ? (r.tempF ?? 0) : tmpVal;
+            const town    = layer._town || {};
+            layer.setIcon(makeTempIcon(dispVal, color));
+            layer.getElement && setTimeout(() => {
+                const el = layer.getElement();
+                if (el) el.setAttribute('aria-label',
+                    `${town.name || ''}: ${dispVal}${tu()}, ${r.condition || ''}`);
+            }, 50);
+            // Refresh popup HTML so it shows the new unit too
+            const isAr = currentLang === 'ar';
+            layer.setPopupContent(`
+                <div style="min-width:140px;font-size:12px;direction:${isAr ? 'rtl' : 'ltr'}">
+                    <b style="color:var(--accent-dark)">${isAr ? (town.nameAr || '') : (town.name || '')}</b><br>
+                    ${r.icon} ${r.condition || ''}<br>
+                    <span style="font-size:14px;font-weight:800">${tv(r.temp, r.tempF)}${tu()}</span>
+                    &nbsp; H:${tv(r.todayMax, r.todayMaxF)}° L:${tv(r.todayMin, r.todayMinF)}°<br>
+                    <span style="font-size:10px;color:#94a3b8">${isAr ? 'انقر للتفاصيل ←' : 'Click for full details →'}</span>
+                </div>`);
+        }
+    });
+    buildLegend(); // Bug 2: rebuild legend with correct unit
     if (lastTown && lastReading) {
         const cachedFacts = factsCache.get(`${lastTown.name}-${T.en.regions[currentRegionKey]}-${currentLang}`);
         renderDashboard(lastTown, lastReading, lastMoon, cachedFacts || '', false, currentRegionKey);
@@ -1257,12 +1312,19 @@ function setUnit(u) {
 function toggleTheme() {
     const d      = document.documentElement;
     const isDark = d.getAttribute('data-theme') === 'dark';
-    d.setAttribute('data-theme', isDark ? '' : 'dark');
+    const nowDark = !isDark;
+    d.setAttribute('data-theme', nowDark ? 'dark' : '');
+    localStorage.setItem('pref_theme', nowDark ? 'dark' : 'light'); // Bug 6: persist
     const btn = document.getElementById('themeBtn');
     if (btn) {
-        btn.textContent = isDark ? '🌙' : '☀️';
+        btn.textContent = nowDark ? '☀️' : '🌙';
+        // Bug 9: update aria-pressed and aria-label
+        btn.setAttribute('aria-pressed', nowDark ? 'true' : 'false');
+        btn.setAttribute('aria-label', nowDark ? 'Switch to light mode' : 'Switch to dark mode');
         btn.focus();
     }
+    // Bug 11: auto-switch basemap to match theme
+    switchBasemap(nowDark ? 'carto_dark' : 'esri_street');
     if (lastTown && lastReading) {
         const cachedFacts = factsCache.get(`${lastTown.name}-${T.en.regions[currentRegionKey]}-${currentLang}`);
         renderDashboard(lastTown, lastReading, lastMoon, cachedFacts || '', false, currentRegionKey);
@@ -1347,22 +1409,26 @@ async function updateView(regionKey, isInitial = false) {
 
                 const tmpVal = reading.temp ?? 0;
                 const color  = getColor(tmpVal);
+                const dispTemp = currentUnit === 'F' ? (reading.tempF ?? 0) : tmpVal;
                 const marker = L.marker([town.lat, town.lon], {
-                    icon: makeTempIcon(tmpVal, color)
+                    icon: makeTempIcon(dispTemp, color)
                 }).addTo(markersLayer);
+                // Store raw reading & town on marker for unit re-renders
+                marker._reading = reading;
+                marker._town    = town;
 
                 marker.getElement && setTimeout(() => {
                     const el = marker.getElement();
                     if (el) el.setAttribute('aria-label',
-                        `${town.name}: ${reading.temp}°C, ${reading.condition || ''}`);
+                        `${town.name}: ${dispTemp}${tu()}, ${reading.condition || ''}`);
                 }, 50);
 
                 marker.bindPopup(`
                     <div style="min-width:140px;font-size:12px;direction:${currentLang === 'ar' ? 'rtl' : 'ltr'}">
                         <b style="color:var(--accent-dark)">${currentLang === 'ar' ? town.nameAr : town.name}</b><br>
                         ${reading.icon} ${reading.condition || ''}<br>
-                        <span style="font-size:14px;font-weight:800">${reading.temp}°C</span>
-                        &nbsp; H:${reading.todayMax}° L:${reading.todayMin}°<br>
+                        <span style="font-size:14px;font-weight:800">${tv(reading.temp, reading.tempF)}${tu()}</span>
+                        &nbsp; H:${tv(reading.todayMax, reading.todayMaxF)}° L:${tv(reading.todayMin, reading.todayMinF)}°<br>
                         <span style="font-size:10px;color:#94a3b8">${currentLang === 'ar' ? 'انقر للتفاصيل ←' : 'Click for full details →'}</span>
                     </div>`, { maxWidth: 200 });
 
@@ -1483,9 +1549,32 @@ function initAds() {
    ═══════════════════════════════════════════════════════════ */
 
 window.onload = () => {
+    // Bug 6: Read persisted preferences (apply after map init to avoid crashes)
+    const savedLang  = localStorage.getItem('pref_lang');
+    const savedUnit  = localStorage.getItem('pref_unit');
+    const savedTheme = localStorage.getItem('pref_theme');
+
+    // Theme can be applied immediately (no map dependency)
+    if (savedTheme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        const btn = document.getElementById('themeBtn');
+        if (btn) {
+            btn.textContent = '☀️';
+            btn.setAttribute('aria-pressed', 'true');
+            btn.setAttribute('aria-label', 'Switch to light mode');
+        }
+    }
+
     buildSelect('DOHA');
     initMap();
     initCookieConsent();
+
+    // Now that map exists, apply persisted unit and language via the toggles
+    // (these call buildLegend / buildBasemapControl which need `map`)
+    if (savedUnit === 'F') setUnit('F');
+    if (savedLang === 'ar') setLang('ar');
+    // Bug 11: also switch basemap if dark theme was restored
+    if (savedTheme === 'dark') switchBasemap('carto_dark');
 
     document.getElementById('btn-en').addEventListener('click', () => setLang('en'));
     document.getElementById('btn-ar').addEventListener('click', () => setLang('ar'));
@@ -1507,7 +1596,9 @@ window.onload = () => {
     if (btnFm) btnFm.addEventListener('click', () => setUnit('F'));
 
     const params = new URLSearchParams(location.search);
+    // URL ?lang= overrides saved preference
     if (params.get('lang') === 'ar') setLang('ar');
+    else if (params.get('lang') === 'en') setLang('en');
     const reg = params.get('reg');
     const initialRegion = reg && DATA_POINTS[reg] ? reg : 'DOHA';
     document.getElementById('region-select').value = initialRegion;
