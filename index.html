@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Qatar Live Weather Today — real-time interactive weather map for Doha and all Qatar municipalities. Current temperature, humidity, wind speed, 3-day forecast, hourly chart, UV index, prayer times and more. Bilingual EN/AR.">
-    <meta name="keywords" content="Qatar weather today, Qatar weather, Doha weather, weather in Qatar, Qatar temperature today, live weather Qatar,  طقس قطر, طقس الدوحة">
+    <meta name="keywords" content="Qatar weather today, Qatar weather, Doha weather, weather in Qatar, Qatar temperature today, live weather Qatar, طقس قطر, طقس الدوحة">
     <meta name="author" content="mohammedlglg">
     <meta name="theme-color" content="#059669">
     <meta name="robots" content="index, follow">
@@ -43,6 +43,81 @@
     <!-- App Stylesheet -->
     <link rel="stylesheet" href="style.css">
 
+    <!-- Ad slot hidden by default — revealed only after weather data loads -->
+    <style>
+        .adsense-slot { display: none; }
+        .adsense-slot.ads-ready { display: block; }
+
+        /* ── CLIMATE INFO SECTION ───────────────────────────── */
+        .climate-section {
+            max-width: 1200px;
+            margin: 32px auto 0;
+            padding: 0 24px;
+        }
+        .climate-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 16px;
+            margin-top: 20px;
+        }
+        .climate-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+        }
+        .climate-card h3 {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--accent);
+            margin: 0 0 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .climate-card p {
+            font-size: 13px;
+            color: var(--txt2);
+            line-height: 1.7;
+            margin: 0;
+        }
+        .climate-section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--txt);
+            margin-bottom: 4px;
+        }
+        .climate-section-sub {
+            font-size: 12px;
+            color: var(--txt3);
+            margin-bottom: 0;
+        }
+        .season-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+        .season-table th {
+            text-align: left;
+            padding: 6px 8px;
+            background: var(--bg);
+            color: var(--txt3);
+            font-weight: 600;
+            border-bottom: 1px solid var(--border);
+        }
+        .season-table td {
+            padding: 6px 8px;
+            color: var(--txt2);
+            border-bottom: 1px solid var(--border);
+        }
+        .season-table tr:last-child td { border-bottom: none; }
+        @media (max-width: 640px) {
+            .climate-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+
     <!-- JSON-LD Structured Data -->
     <script type="application/ld+json">
     {
@@ -50,22 +125,22 @@
       "@graph": [
         {
           "@type": "WebSite",
-          "@id": "https://qatar-live-weather.com/#website",
-          "url": "https://qatar-live-weather.com/",
+          "@id": "https://qatarliveweather.com/#website",
+          "url": "https://qatarliveweather.com/",
           "name": "Qatar Live Weather",
           "description": "Real-time interactive weather map for Qatar — all municipalities, bilingual EN/AR",
           "inLanguage": ["en", "ar"],
           "publisher": {
             "@type": "Organization",
             "name": "Qatar Live Weather",
-            "url": "https://qatar-live-weather.com/"
+            "url": "https://qatarliveweather.com/"
           }
         },
         {
           "@type": "WebApplication",
-          "@id": "https://qatar-live-weather.com/#app",
+          "@id": "https://qatarliveweather.com/#app",
           "name": "Qatar Live Weather Map",
-          "url": "https://qatar-live-weather.com/",
+          "url": "https://qatarliveweather.com/",
           "applicationCategory": "WeatherApplication",
           "operatingSystem": "Any",
           "description": "Live weather map covering all Qatar municipalities with temperature, humidity, wind, UV index, prayer times, forecasts, and astronomy data.",
@@ -88,9 +163,6 @@
     }
     </script>
 
-    <!-- Google AdSense -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2032436364726427" crossorigin="anonymous"></script>
-
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-YWEKPB5X90"></script>
     <script>
@@ -99,6 +171,12 @@
         gtag('js', new Date());
         gtag('config', 'G-YWEKPB5X90');
     </script>
+
+    <!--
+        NOTE: Google AdSense script is loaded AFTER weather data renders (see app.js → initAds).
+        This prevents ads from showing on an empty/loading screen, complying with
+        Google's "ads on screens without publisher content" policy.
+    -->
 </head>
 <body>
 
@@ -232,6 +310,101 @@
         </div>
     </div>
 
+    <!-- ── AD SLOT: shown only after weather data has loaded ─── -->
+    <!--
+        This slot is hidden by default (.adsense-slot has display:none).
+        app.js calls initAds() after updateView() completes, which adds
+        the class "ads-ready" and pushes the ad unit — ensuring Google
+        never sees an ad alongside an empty/loading screen.
+    -->
+    <div class="adsense-slot" id="ad-slot-main" aria-hidden="true">
+        <div style="max-width:1200px;margin:16px auto;padding:0 24px;text-align:center;">
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-client="ca-pub-2032436364726427"
+                 data-ad-slot="auto"
+                 data-ad-format="auto"
+                 data-full-width-responsive="true"></ins>
+        </div>
+    </div>
+
+    <!-- ── QATAR CLIMATE INFORMATION ─────────────────────────── -->
+    <!--
+        Original editorial content about Qatar's climate.
+        This satisfies Google's "publisher content" requirement —
+        the page provides genuine informational value beyond raw API data.
+    -->
+    <section class="climate-section" aria-label="Qatar climate information">
+        <div>
+            <div class="climate-section-title">🌍 Understanding Qatar's Climate</div>
+            <p class="climate-section-sub">Original editorial content — updated seasonally</p>
+        </div>
+
+        <div class="climate-grid">
+
+            <div class="climate-card">
+                <h3>🌡️ Qatar's Climate Overview</h3>
+                <p>Qatar has a hot desert climate (Köppen BWh), characterised by extremely hot, humid summers and mild, dry winters. The country sits at approximately 25°N latitude on the Arabian Peninsula, surrounded by the Arabian Gulf on three sides, which moderates temperatures somewhat while adding high humidity during the warmer months.</p>
+                <p style="margin-top:8px">Annual rainfall averages only 70–80 mm, almost all falling between November and March. Snow is essentially unknown.</p>
+            </div>
+
+            <div class="climate-card">
+                <h3>☀️ Seasonal Breakdown</h3>
+                <table class="season-table">
+                    <thead>
+                        <tr>
+                            <th>Season</th>
+                            <th>Months</th>
+                            <th>Avg High</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Winter</td><td>Dec–Feb</td><td>22–24°C</td><td>Mild, occasional rain</td></tr>
+                        <tr><td>Spring</td><td>Mar–May</td><td>30–38°C</td><td>Rising temps, dusty</td></tr>
+                        <tr><td>Summer</td><td>Jun–Sep</td><td>40–45°C</td><td>Extreme heat &amp; humidity</td></tr>
+                        <tr><td>Autumn</td><td>Oct–Nov</td><td>30–36°C</td><td>Cooling, rare showers</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="climate-card">
+                <h3>🔥 Heat Safety in Qatar</h3>
+                <p>During June–September, outdoor conditions can be dangerous. The combination of temperatures above 40°C and humidity above 60% creates a heat index that far exceeds the thermometer reading.</p>
+                <p style="margin-top:8px"><strong>Key safety thresholds:</strong></p>
+                <p style="margin-top:4px">— Feels like &gt;46°C: Avoid outdoor activity<br>
+                — UV Index &gt;8: Full sun protection required<br>
+                — Visibility &lt;1 km: Dust/sandstorm conditions<br>
+                — Humidity &gt;75%: High heat stroke risk</p>
+                <p style="margin-top:8px">Qatar mandates a midday work ban (11:30–15:00) for outdoor workers from 1 June to 15 September each year.</p>
+            </div>
+
+            <div class="climate-card">
+                <h3>🌬️ Wind &amp; Dust Events</h3>
+                <p>The <em>Shamal</em> — a northwesterly wind — is the most significant wind pattern in Qatar. It can bring dust and sandstorms, especially in spring. Sustained Shamal winds of 40–60 km/h combined with low humidity cause rapid desiccation and reduce visibility to under 1 km.</p>
+                <p style="margin-top:8px">The <em>Kaus</em> (southeasterly) and <em>Barih</em> (northerly) are secondary wind patterns. During summer nights, the sea breeze from the Arabian Gulf provides some relief to coastal areas like Doha and The Pearl.</p>
+            </div>
+
+            <div class="climate-card">
+                <h3>☔ Rainfall &amp; Humidity</h3>
+                <p>Rain in Qatar is infrequent but can be intense when it occurs. Winter rainfall events can cause flash flooding in Doha due to limited drainage infrastructure. The wettest month is typically February (average ~18 mm).</p>
+                <p style="margin-top:8px">Humidity is highest from July to August when sea surface temperatures peak. Coastal Doha regularly records relative humidity above 80% at night during these months, while inland areas like Dukhan remain drier.</p>
+            </div>
+
+            <div class="climate-card">
+                <h3>🌅 UV Index &amp; Sun Hours</h3>
+                <p>Qatar receives 9–11 hours of sunshine per day year-round, making it one of the sunniest countries globally. The UV index peaks between April and September, regularly reaching 10–12 (Very High to Extreme).</p>
+                <p style="margin-top:8px"><strong>UV safety guide:</strong><br>
+                — UV 1–2: No protection needed<br>
+                — UV 3–5: Sunscreen SPF 30+ recommended<br>
+                — UV 6–7: High — hat and shade essential<br>
+                — UV 8–10: Very High — avoid midday sun<br>
+                — UV 11+: Extreme — stay indoors 10:00–16:00</p>
+            </div>
+
+        </div>
+    </section>
+
     <!-- ── FOOTER ─────────────────────────────────────────────── -->
     <footer class="footer" role="contentinfo">
         <div class="footer-top">
@@ -277,6 +450,13 @@
     <script src="translations.js"></script>
     <script src="data.js"></script>
     <script src="app.js"></script>
+
+    <!--
+        AdSense library loaded LAST — after all page content is in the DOM.
+        The actual ad push (adsbygoogle.push) happens inside app.js → initAds(),
+        which is called only once weather markers have successfully rendered.
+    -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2032436364726427" crossorigin="anonymous"></script>
 
 </body>
 </html>

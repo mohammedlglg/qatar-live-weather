@@ -1442,6 +1442,40 @@ async function updateView(regionKey, isInitial = false) {
 
     if (freshnessInterval) clearInterval(freshnessInterval);
     freshnessInterval = setInterval(updateFreshnessLabel, 60000);
+
+    // ── Activate ads now that content is visible ──────────────
+    // Called here (after loading overlay is hidden and markers are rendered)
+    // so Google never serves ads on a screen without publisher content.
+    initAds();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ADS INITIALISATION
+   Ads are only activated after weather data has loaded and
+   is visible on screen. This prevents Google from seeing ads
+   alongside empty/loading content ("ads without publisher
+   content" policy violation).
+   ═══════════════════════════════════════════════════════════ */
+
+let adsInitialised = false;
+
+function initAds() {
+    if (adsInitialised) return; // only push once per page load
+    adsInitialised = true;
+
+    const slot = document.getElementById('ad-slot-main');
+    if (!slot) return;
+
+    // Reveal the slot (CSS: .adsense-slot { display:none } → .ads-ready { display:block })
+    slot.classList.add('ads-ready');
+    slot.removeAttribute('aria-hidden');
+
+    // Push the ad unit now that content is confirmed visible
+    try {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+    } catch (e) {
+        console.warn('AdSense push failed:', e);
+    }
 }
 
 /* ═══════════════════════════════════════════════════════════
