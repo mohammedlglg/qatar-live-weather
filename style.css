@@ -70,11 +70,15 @@
 
 /* ── Base ──────────────────────────────────────────────────── */
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+html {
+    scroll-behavior: smooth;
+    /* !important guards against wttr.in injecting `html,body{background:#000}` */
+    background: var(--bg) !important;
+}
 
 body {
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    background: var(--bg);
+    background: var(--bg) !important;   /* overrides any 3rd-party stylesheet (e.g. wttr.in) */
     color: var(--txt);
     min-height: 100vh;
     line-height: 1.5;
