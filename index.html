@@ -9,16 +9,9 @@
     <meta name="theme-color" content="#059669">
     <meta name="robots" content="index, follow">
     <meta name="google-adsense-account" content="ca-pub-2032436364726427">
-    <meta name="geo.region" content="QA">
-    <meta name="geo.placename" content="Qatar">
 
     <!-- Canonical -->
-    <link rel="canonical" href="https://qatarliveweather.com/">
-
-    <!-- hreflang for bilingual EN/AR -->
-    <link rel="alternate" hreflang="en" href="https://qatarliveweather.com/">
-    <link rel="alternate" hreflang="ar" href="https://qatarliveweather.com/">
-    <link rel="alternate" hreflang="x-default" href="https://qatarliveweather.com/">
+    <link rel="canonical" href="https://qatarliveweather.com">
 
     <!-- Open Graph / Social sharing -->
     <meta property="og:type"        content="website">
@@ -34,7 +27,7 @@
     <meta name="twitter:image"      content="https://qatarliveweather.com/og-image.png">
     <meta name="twitter:site"       content="@QatarLiveWX">
 
-    <title>Qatar Live Weather — Real-Time Map for All Municipalities</title>
+    <title>Qatar Live Weather Today | Real-Time Doha Weather Updates | Weather in Qatar Now</title>
 
     <!-- PWA manifest & favicon -->
     <link rel="manifest" href="manifest.json">
@@ -65,6 +58,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
             gap: 16px;
+            margin-top: 20px;
         }
         .climate-card {
             background: var(--card);
@@ -169,77 +163,13 @@
     }
     </script>
 
-    <!--
-    ═══════════════════════════════════════════════════════════
-    GOOGLE ANALYTICS 4 — CONSENT-GATED
-    -------------------------------------------------------
-    WHY this pattern:
-      • gtag() MUST be defined globally or any call to it
-        (e.g. from browser extensions or future code) would
-        throw a ReferenceError and crash the whole page.
-      • We define gtag() immediately so the function always
-        exists — but we set 'analytics_storage: denied' so
-        NO cookies or tracking data are written until the
-        user explicitly accepts via the cookie banner.
-      • When the user clicks Accept, app.js calls
-        gtag('consent','update',{analytics_storage:'granted'})
-        and loads the actual GA library dynamically.
-      • This is fully GDPR-compliant: no data leaves the
-        browser until consent is given.
-    ═══════════════════════════════════════════════════════════
-    -->
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-YWEKPB5X90"></script>
     <script>
-        // Step 1: Always define gtag so nothing crashes.
         window.dataLayer = window.dataLayer || [];
-        function gtag(){ dataLayer.push(arguments); }
-
-        // Step 2: Default consent — everything denied.
-        gtag('consent', 'default', {
-            analytics_storage:    'denied',
-            ad_storage:           'denied',
-            ad_user_data:         'denied',
-            ad_personalization:   'denied',
-            wait_for_update:      500
-        });
-
-        // Step 3: If user already accepted in a previous visit,
-        //         restore consent and load GA immediately.
-        if (localStorage.getItem('cookie_consent') === 'accepted') {
-            gtag('consent', 'update', {
-                analytics_storage:  'granted',
-                ad_storage:         'granted',
-                ad_user_data:       'granted',
-                ad_personalization: 'granted'
-            });
-            // Dynamically load the GA library
-            (function() {
-                var s = document.createElement('script');
-                s.async = true;
-                s.src = 'https://www.googletagmanager.com/gtag/js?id=G-YWEKPB5X90';
-                document.head.appendChild(s);
-            })();
-            gtag('js', new Date());
-            gtag('config', 'G-YWEKPB5X90', { anonymize_ip: true });
-        }
-
-        // Step 4: Helper called by app.js when user clicks "Accept"
-        function enableAnalytics() {
-            gtag('consent', 'update', {
-                analytics_storage:  'granted',
-                ad_storage:         'granted',
-                ad_user_data:       'granted',
-                ad_personalization: 'granted'
-            });
-            if (!window._gaLoaded) {
-                window._gaLoaded = true;
-                var s = document.createElement('script');
-                s.async = true;
-                s.src = 'https://www.googletagmanager.com/gtag/js?id=G-YWEKPB5X90';
-                document.head.appendChild(s);
-                gtag('js', new Date());
-                gtag('config', 'G-YWEKPB5X90', { anonymize_ip: true });
-            }
-        }
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-YWEKPB5X90');
     </script>
 
     <!--
@@ -248,3 +178,287 @@
         Google's "ads on screens without publisher content" policy.
     -->
 </head>
+<body>
+
+    <!-- ── HEAT / DUST ALERT BANNER ──────────────────────────── -->
+    <div id="alert-banner" class="alert-banner" style="display:none" role="alert" aria-live="assertive">
+        <span id="alert-icon">⚠️</span>
+        <span id="alert-text"></span>
+        <button class="alert-dismiss" id="alert-dismiss" aria-label="Dismiss alert">✕</button>
+    </div>
+
+    <!-- ── COOKIE CONSENT BANNER ─────────────────────────────── -->
+    <div id="cookie-banner" class="cookie-banner" role="dialog" aria-label="Cookie consent" aria-modal="false" style="display:none">
+        <div class="cookie-inner">
+            <div class="cookie-text">
+                <span class="cookie-icon" aria-hidden="true">🍪</span>
+                <div>
+                    <strong id="cookie-title">We use cookies</strong>
+                    <p id="cookie-desc">This site uses Google Analytics and Google AdSense cookies to improve your experience and serve relevant ads. See our <a href="privacy.html" id="cookie-privacy-link">Privacy Policy</a>.</p>
+                </div>
+            </div>
+            <div class="cookie-actions">
+                <button class="cookie-btn cookie-decline" id="cookie-decline">Decline</button>
+                <button class="cookie-btn cookie-accept" id="cookie-accept">Accept</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── NAVBAR ─────────────────────────────────────────────────── -->
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
+        <div class="nav-inner">
+            <div class="nav-brand">
+                <svg class="brand-icon" width="22" height="22" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                     aria-hidden="true">
+                    <path d="M12 2v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="M2 12h2"/>
+                    <path d="m4.93 19.07 1.41-1.41"/><path d="M12 20v2"/>
+                    <path d="m19.07 19.07-1.41-1.41"/><path d="M22 12h-2"/>
+                    <path d="m19.07 4.93-1.41 1.41"/><circle cx="12" cy="12" r="4"/>
+                </svg>
+                <h1 class="nav-brand-title" id="nav-title" style="font-size:inherit;font-weight:inherit;margin:0;display:inline">Qatar Live Weather</h1>
+            </div>
+            <div class="nav-actions">
+                <!-- Language pill -->
+                <div class="lang-pill" role="group" aria-label="Language selector">
+                    <button id="btn-en" class="lang-btn active" aria-pressed="true" aria-label="Switch to English">EN</button>
+                    <button id="btn-ar" class="lang-btn" aria-pressed="false" aria-label="Switch to Arabic">ع</button>
+                </div>
+                <!-- Region selector -->
+                <div class="region-wrap">
+                    <label id="region-label" for="region-select">Region:</label>
+                    <select id="region-select" aria-label="Select region"></select>
+                </div>
+                <!-- Unit toggle -->
+                <div class="unit-wrap" role="group" aria-label="Temperature unit">
+                    <button class="icon-btn active" id="btnC" aria-pressed="true">°C</button>
+                    <button class="icon-btn" id="btnF" aria-pressed="false">°F</button>
+                </div>
+                <!-- Geolocation -->
+                <button class="icon-btn geo-btn" id="geoBtn" title="Find nearest location" aria-label="Use my location">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3"/>
+                    </svg>
+                </button>
+                <!-- Theme toggle -->
+                <button class="icon-btn" id="themeBtn" aria-label="Switch to dark mode" aria-pressed="false">🌙</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ── MOBILE BOTTOM CONTROLS BAR ──────────────────────────── -->
+    <div class="mobile-bar" id="mobile-bar" role="toolbar" aria-label="Mobile controls">
+        <div class="region-wrap mobile-region">
+            <label id="region-label-m" for="region-select-m">Region:</label>
+            <select id="region-select-m" aria-label="Select region"></select>
+        </div>
+        <div class="unit-wrap" role="group" aria-label="Temperature unit">
+            <button class="icon-btn active" id="btnCm" aria-pressed="true">°C</button>
+            <button class="icon-btn" id="btnFm" aria-pressed="false">°F</button>
+        </div>
+    </div>
+
+    <!-- ── MAIN LAYOUT ─────────────────────────────────────────── -->
+    <main id="main-content">
+    <div class="app-wrap">
+        <div class="split-layout">
+
+            <!-- LEFT: MAP PANEL -->
+            <div class="map-panel">
+                <div style="position:relative;">
+                    <!-- Loading overlay -->
+                    <div id="loading" class="loading-overlay" role="status" aria-live="polite">
+                        <div class="brand-spinner" aria-hidden="true">
+                            <div class="bs-ring"></div>
+                            <div class="bs-icon">🌤️</div>
+                        </div>
+                        <div id="loading-text">Fetching Live Weather Data...</div>
+                        <div id="loading-progress" class="loading-progress">0 / 0</div>
+                        <div class="loading-bar-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="loading-bar">
+                            <div id="loading-bar-fill" class="loading-bar-fill" style="width:0%"></div>
+                        </div>
+                    </div>
+                    <div id="map" role="application" aria-label="Qatar weather map — click a marker for details"></div>
+                </div>
+                <div class="map-footer">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none"
+                         viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    <span id="collection-time">Updating current conditions...</span>
+                    <!-- Refresh button -->
+                    <button class="refresh-btn" id="refreshBtn" title="Refresh weather data" aria-label="Refresh weather data">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                            <path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                            <path d="M8 16H3v5"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- RIGHT: DASHBOARD PANEL -->
+            <div class="dash-panel" id="dash-panel" aria-live="polite" aria-atomic="false">
+                <div class="hero-empty">
+                    <div style="font-size:36px;" aria-hidden="true">🗺️</div>
+                    <div class="hint-txt" id="hint-txt">Click any map marker for detailed weather</div>
+                    <div class="hint-sub" id="hint-sub">Forecast, hourly chart, astronomy &amp; more</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ── AD SLOT: shown only after weather data has loaded ─── -->
+    <!--
+        This slot is hidden by default (.adsense-slot has display:none).
+        app.js calls initAds() after updateView() completes, which adds
+        the class "ads-ready" and pushes the ad unit — ensuring Google
+        never sees an ad alongside an empty/loading screen.
+    -->
+    <div class="adsense-slot" id="ad-slot-main" aria-hidden="true">
+        <div style="max-width:1200px;margin:16px auto;padding:0 24px;text-align:center;">
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-client="ca-pub-2032436364726427"
+                 data-ad-slot="auto"
+                 data-ad-format="auto"
+                 data-full-width-responsive="true"></ins>
+        </div>
+    </div>
+
+    <!-- ── QATAR CLIMATE INFORMATION ─────────────────────────── -->
+    <!--
+        Original editorial content about Qatar's climate.
+        This satisfies Google's "publisher content" requirement —
+        the page provides genuine informational value beyond raw API data.
+    -->
+    <section class="climate-section" aria-label="Qatar climate information">
+        <div>
+            <div class="climate-section-title">🌍 Understanding Qatar's Climate</div>
+            <p class="climate-section-sub">Original editorial content — updated seasonally</p>
+        </div>
+
+        <div class="climate-grid">
+
+            <div class="climate-card">
+                <h3>🌡️ Qatar's Climate Overview</h3>
+                <p>Qatar has a hot desert climate (Köppen BWh), characterised by extremely hot, humid summers and mild, dry winters. The country sits at approximately 25°N latitude on the Arabian Peninsula, surrounded by the Arabian Gulf on three sides, which moderates temperatures somewhat while adding high humidity during the warmer months.</p>
+                <p style="margin-top:8px">Annual rainfall averages only 70–80 mm, almost all falling between November and March. Snow is essentially unknown.</p>
+            </div>
+
+            <div class="climate-card">
+                <h3>☀️ Seasonal Breakdown</h3>
+                <table class="season-table">
+                    <thead>
+                        <tr>
+                            <th>Season</th>
+                            <th>Months</th>
+                            <th>Avg High</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Winter</td><td>Dec–Feb</td><td>22–24°C</td><td>Mild, occasional rain</td></tr>
+                        <tr><td>Spring</td><td>Mar–May</td><td>30–38°C</td><td>Rising temps, dusty</td></tr>
+                        <tr><td>Summer</td><td>Jun–Sep</td><td>40–45°C</td><td>Extreme heat &amp; humidity</td></tr>
+                        <tr><td>Autumn</td><td>Oct–Nov</td><td>30–36°C</td><td>Cooling, rare showers</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="climate-card">
+                <h3>🔥 Heat Safety in Qatar</h3>
+                <p>During June–September, outdoor conditions can be dangerous. The combination of temperatures above 40°C and humidity above 60% creates a heat index that far exceeds the thermometer reading.</p>
+                <p style="margin-top:8px"><strong>Key safety thresholds:</strong></p>
+                <p style="margin-top:4px">— Feels like &gt;46°C: Avoid outdoor activity<br>
+                — UV Index &gt;8: Full sun protection required<br>
+                — Visibility &lt;1 km: Dust/sandstorm conditions<br>
+                — Humidity &gt;75%: High heat stroke risk</p>
+                <p style="margin-top:8px">Qatar mandates a midday work ban (11:30–15:00) for outdoor workers from 1 June to 15 September each year.</p>
+            </div>
+
+            <div class="climate-card">
+                <h3>🌬️ Wind &amp; Dust Events</h3>
+                <p>The <em>Shamal</em> — a northwesterly wind — is the most significant wind pattern in Qatar. It can bring dust and sandstorms, especially in spring. Sustained Shamal winds of 40–60 km/h combined with low humidity cause rapid desiccation and reduce visibility to under 1 km.</p>
+                <p style="margin-top:8px">The <em>Kaus</em> (southeasterly) and <em>Barih</em> (northerly) are secondary wind patterns. During summer nights, the sea breeze from the Arabian Gulf provides some relief to coastal areas like Doha and The Pearl.</p>
+            </div>
+
+            <div class="climate-card">
+                <h3>☔ Rainfall &amp; Humidity</h3>
+                <p>Rain in Qatar is infrequent but can be intense when it occurs. Winter rainfall events can cause flash flooding in Doha due to limited drainage infrastructure. The wettest month is typically February (average ~18 mm).</p>
+                <p style="margin-top:8px">Humidity is highest from July to August when sea surface temperatures peak. Coastal Doha regularly records relative humidity above 80% at night during these months, while inland areas like Dukhan remain drier.</p>
+            </div>
+
+            <div class="climate-card">
+                <h3>🌅 UV Index &amp; Sun Hours</h3>
+                <p>Qatar receives 9–11 hours of sunshine per day year-round, making it one of the sunniest countries globally. The UV index peaks between April and September, regularly reaching 10–12 (Very High to Extreme).</p>
+                <p style="margin-top:8px"><strong>UV safety guide:</strong><br>
+                — UV 1–2: No protection needed<br>
+                — UV 3–5: Sunscreen SPF 30+ recommended<br>
+                — UV 6–7: High — hat and shade essential<br>
+                — UV 8–10: Very High — avoid midday sun<br>
+                — UV 11+: Extreme — stay indoors 10:00–16:00</p>
+            </div>
+
+        </div>
+    </section>
+    </main>
+
+    <!-- ── FOOTER ─────────────────────────────────────────────── -->
+    <footer class="footer" role="contentinfo">
+        <div class="footer-top">
+            <div class="footer-brand">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                     style="color:var(--accent)" aria-hidden="true">
+                    <path d="M12 2v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="M2 12h2"/>
+                    <path d="m4.93 19.07 1.41-1.41"/><path d="M12 20v2"/>
+                    <path d="m19.07 19.07-1.41-1.41"/><path d="M22 12h-2"/>
+                    <path d="m19.07 4.93-1.41 1.41"/><circle cx="12" cy="12" r="4"/>
+                </svg>
+                <span style="font-weight:700;font-size:14px">Qatar Live Weather</span>
+            </div>
+            <nav class="footer-nav" aria-label="Footer navigation">
+                <a href="about.html">About</a>
+                <a href="privacy.html">Privacy Policy</a>
+                <a href="contact.html">Contact</a>
+            </nav>
+        </div>
+        <div class="footer-bottom">
+            <span class="footer-data">
+                <strong>Data:</strong>
+                <a href="https://wttr.in" target="_blank" rel="noopener">wttr.in</a> &amp;
+                <a href="https://wikipedia.org" target="_blank" rel="noopener">Wikipedia</a> &amp;
+                <a href="https://aladhan.com" target="_blank" rel="noopener">Aladhan</a>
+                &nbsp;·&nbsp;
+                <span class="footer-disclaimer" id="footer-disclaimer">Weather data is provided for informational purposes only and is not official Qatar Met Department data.</span>
+            </span>
+            <div class="sig-badge">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none"
+                     viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                </svg>
+                by <span>mohammedlglg</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ── Scripts ─────────────────────────────────────────────── -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="translations.js"></script>
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+
+    <!--
+        AdSense library loaded LAST — after all page content is in the DOM.
+        The actual ad push (adsbygoogle.push) happens inside app.js → initAds(),
+        which is called only once weather markers have successfully rendered.
+    -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2032436364726427" crossorigin="anonymous"></script>
+
+</body>
+</html>

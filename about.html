@@ -5,15 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="About Qatar Live Weather — a free, bilingual real-time weather map covering all Qatar municipalities. Learn about Qatar's climate, heat safety, UV index, dust events, and seasonal weather patterns.">
     <meta name="robots" content="index, follow">
-
-    <!-- FIX #2: Canonical tag (was missing entirely) -->
-    <link rel="canonical" href="https://qatarliveweather.com/about.html">
-
-    <!-- FIX #14: Geo meta tags -->
-    <meta name="geo.region" content="QA">
-    <meta name="geo.placename" content="Qatar">
-
-    <title>About Qatar Live Weather — Climate Guide, Features &amp; Data Sources</title>
+    <title>About Qatar Live Weather — Climate Guide, Features & Data Sources</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -37,5 +29,207 @@
         [data-theme="dark"] .warning-box { background:#451a03; }
         .warning-box p { font-size:13px; color:#92400e; margin:0; line-height:1.7; }
         [data-theme="dark"] .warning-box p { color:#fbbf24; }
+        .uv-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:8px; margin:12px 0 16px; }
+        .uv-card { border-radius:8px; padding:10px 12px; font-size:12px; font-weight:600; }
+        .uv-low      { background:#dcfce7; color:#166534; }
+        .uv-mod      { background:#fef9c3; color:#854d0e; }
+        .uv-high     { background:#ffedd5; color:#9a3412; }
+        .uv-vhigh    { background:#fee2e2; color:#991b1b; }
+        .uv-extreme  { background:#f3e8ff; color:#6b21a8; }
+        [data-theme="dark"] .uv-low     { background:#14532d; color:#86efac; }
+        [data-theme="dark"] .uv-mod     { background:#713f12; color:#fde68a; }
+        [data-theme="dark"] .uv-high    { background:#7c2d12; color:#fdba74; }
+        [data-theme="dark"] .uv-vhigh   { background:#7f1d1d; color:#fca5a5; }
+        [data-theme="dark"] .uv-extreme { background:#3b0764; color:#d8b4fe; }
+        .uv-card .uv-label { font-size:11px; font-weight:400; margin-top:2px; opacity:.8; }
     </style>
 </head>
+<body>
+
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
+        <div class="nav-inner">
+            <a class="nav-brand" href="index.html" style="text-decoration:none">
+                <svg class="brand-icon" width="22" height="22" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                     aria-hidden="true">
+                    <path d="M12 2v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="M2 12h2"/>
+                    <path d="m4.93 19.07 1.41-1.41"/><path d="M12 20v2"/>
+                    <path d="m19.07 19.07-1.41-1.41"/><path d="M22 12h-2"/>
+                    <path d="m19.07 4.93-1.41 1.41"/><circle cx="12" cy="12" r="4"/>
+                </svg>
+                <span>Qatar Live Weather</span>
+            </a>
+            <div class="nav-actions">
+                <a href="index.html" class="icon-btn" style="text-decoration:none">← Back to Map</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="static-wrap about-content">
+
+        <div class="static-hero">
+            <div class="sh-icon">🌤️</div>
+            <h1>About Qatar Live Weather</h1>
+            <p>A free, bilingual, interactive weather map covering every municipality in Qatar — built for residents, expats, and visitors who need to understand this country's unique and challenging climate.</p>
+        </div>
+
+        <!-- ── WHAT IS THIS ──────────────────────────────────── -->
+        <div class="static-section">
+            <h2>What Is This?</h2>
+            <p>Qatar Live Weather is a real-time interactive weather dashboard that shows current conditions across all Qatar municipalities. It pulls live data from <a href="https://wttr.in" target="_blank" rel="noopener">wttr.in</a> (powered by WorldWeatherOnline) and presents it as colour-coded temperature markers on an interactive Leaflet map. Click any marker to open a full weather breakdown for that location.</p>
+            <p>Each location shows: current temperature and feels-like, 3-day forecast, hourly forecast strip, UV index with safety rating, humidity and dew point, wind speed and direction compass, barometric pressure, visibility, precipitation probability charts, prayer times, sun &amp; moon astronomy, and a Wikipedia summary of the area. All features are available in both English and Arabic with full RTL support.</p>
+        </div>
+
+        <!-- ── WHY ─────────────────────────────────────────── -->
+        <div class="static-section">
+            <h2>Why We Built It</h2>
+            <p>Qatar's climate is genuinely extreme — it is one of the hottest inhabited countries on Earth. Summer heat index values regularly exceed 55°C, UV levels reach "Extreme" classification for months at a time, and sudden sandstorms can reduce visibility to near zero. This is not abstract meteorological trivia; it directly affects daily decisions about commuting, exercise, children playing outdoors, and construction work.</p>
+            <p>Yet most global weather apps cover Qatar as a single point (usually Doha International Airport), ignore the significant variation across Qatar's diverse geography — from coastal Doha to the dunes near Dukhan — and offer no Arabic-language interface. Qatar Live Weather fills that gap.</p>
+        </div>
+
+        <!-- ── FEATURES ───────────────────────────────────── -->
+        <div class="static-section">
+            <h2>Features</h2>
+            <ul>
+                <li>✅ <strong>Real-time temperature map</strong> — colour-coded markers across 7 municipalities and 40+ locations</li>
+                <li>✅ <strong>3-day weather forecast</strong> with daily max/min, UV, wind, and humidity</li>
+                <li>✅ <strong>Hourly forecast strip</strong> with rain probability for the next 8 time slots</li>
+                <li>✅ <strong>UV index</strong> with 5-level safety guidance (Low → Extreme)</li>
+                <li>✅ <strong>Heat stress index</strong> — is it safe to be outside right now?</li>
+                <li>✅ <strong>Dust and sandstorm alerts</strong> triggered by low visibility + high wind</li>
+                <li>✅ <strong>Extreme heat alerts</strong> when feels-like exceeds 45°C</li>
+                <li>✅ <strong>Prayer times</strong> (Fajr, Sunrise, Dhuhr, Asr, Maghrib, Isha) with next-prayer highlight</li>
+                <li>✅ <strong>Sun &amp; moon astronomy</strong> — sunrise, sunset arc, moon phase, moonrise/set, illumination %</li>
+                <li>✅ <strong>Wind compass</strong> with bearing and Beaufort-scale description</li>
+                <li>✅ <strong>Temperature &amp; rain probability charts</strong> (Chart.js)</li>
+                <li>✅ <strong>Bilingual</strong> — full English and Arabic (RTL) support</li>
+                <li>✅ <strong>6 basemap styles</strong> — Street, Light, Dark, Satellite, Topo, OpenStreetMap</li>
+                <li>✅ <strong>Geolocation</strong> — finds the nearest weather station to your current position</li>
+                <li>✅ <strong>Share by URL</strong> — deep-link any location with its weather data</li>
+                <li>✅ <strong>Dark mode</strong></li>
+                <li>✅ <strong>PWA</strong> — installable as a mobile or desktop app with offline support</li>
+            </ul>
+        </div>
+
+        <!-- ── REGIONS ────────────────────────────────────── -->
+        <div class="static-section">
+            <h2>Regions Covered</h2>
+            <p>The map covers all seven Qatari municipalities (<em>Baladiyat</em>), including urban, suburban, industrial, and coastal locations:</p>
+            <table class="climate-table">
+                <thead><tr><th>Municipality</th><th>Key Locations</th><th>Character</th></tr></thead>
+                <tbody>
+                    <tr><td>🏙️ <strong>Ad Dawhah (Doha)</strong></td><td>West Bay, Lusail, The Pearl, Qatar University, Airport, Old Town, Hamad Port</td><td>Urban coastal capital; sea breeze moderates summer nights</td></tr>
+                    <tr><td>🏘️ <strong>Ar Rayyan</strong></td><td>Education City, Al Waab, Sports City, Abu Samra</td><td>Suburban/inland; hotter and drier than coastal Doha</td></tr>
+                    <tr><td>🌊 <strong>Al Wakrah</strong></td><td>Al Wakrah city, Mesaieed Industrial Area, Sealine, Inland Sea</td><td>Southern industrial and desert; extreme summer heat</td></tr>
+                    <tr><td>🏭 <strong>Al Khor &amp; Dhekra</strong></td><td>Al Khor city, Ras Laffan Industrial City</td><td>Northern coast; major LNG hub; less humidity than Doha</td></tr>
+                    <tr><td>🏝️ <strong>Ash Shamal</strong></td><td>Al Zubara (UNESCO site), Al Ruwais</td><td>Qatar's northernmost tip; archaeological heritage area</td></tr>
+                    <tr><td>🐪 <strong>Ash Sheehaniya</strong></td><td>Dukhan, Camel Race Track, Al Shahaniya</td><td>Western oil town; hottest &amp; driest area of Qatar</td></tr>
+                    <tr><td>🌿 <strong>Ad Daayen</strong></td><td>Umm Slal Mohammed, Al Kheesa, Al Daayen</td><td>Northern suburban growth corridor</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ── QATAR CLIMATE GUIDE ─────────────────────────── -->
+        <div class="static-section">
+            <h2>Qatar Climate Guide</h2>
+            <p>Qatar has a hot desert climate (Köppen classification BWh). It sits at approximately 25°N latitude on the Arabian Peninsula, surrounded by the Arabian Gulf on three sides. The Gulf moderates temperatures compared to the Saudi interior but adds significant humidity during summer months, creating dangerous heat-index conditions.</p>
+
+            <h3>Annual Temperature Pattern</h3>
+            <table class="climate-table">
+                <thead><tr><th>Month</th><th>Avg High (°C)</th><th>Avg Low (°C)</th><th>Humidity (%)</th><th>UV Index</th><th>What to Expect</th></tr></thead>
+                <tbody>
+                    <tr><td>January</td><td>22</td><td>13</td><td>65</td><td>4</td><td>Mild, pleasant; occasional fog at night</td></tr>
+                    <tr><td>February</td><td>24</td><td>14</td><td>60</td><td>5</td><td>Warmest winter month; most rainfall</td></tr>
+                    <tr><td>March</td><td>29</td><td>18</td><td>55</td><td>7</td><td>Warming; dust events increase</td></tr>
+                    <tr><td>April</td><td>35</td><td>22</td><td>48</td><td>9</td><td>Hot; UV Very High; less rain</td></tr>
+                    <tr><td>May</td><td>40</td><td>27</td><td>45</td><td>10</td><td>Very hot; Shamal winds; dust storms</td></tr>
+                    <tr><td>June</td><td>43</td><td>30</td><td>55</td><td>11</td><td>Summer begins; humidity rising rapidly</td></tr>
+                    <tr><td>July</td><td>44</td><td>31</td><td>65</td><td>11</td><td>Peak heat &amp; humidity; heat index 55°C+</td></tr>
+                    <tr><td>August</td><td>44</td><td>31</td><td>70</td><td>11</td><td>Hottest month; most oppressive humidity</td></tr>
+                    <tr><td>September</td><td>41</td><td>28</td><td>65</td><td>9</td><td>Still dangerous; slight relief late month</td></tr>
+                    <tr><td>October</td><td>36</td><td>23</td><td>55</td><td>7</td><td>Noticeably cooler; outdoor activities resume</td></tr>
+                    <tr><td>November</td><td>29</td><td>18</td><td>60</td><td>5</td><td>Pleasant; occasional showers</td></tr>
+                    <tr><td>December</td><td>23</td><td>14</td><td>63</td><td>4</td><td>Cool and dry; best month for outdoor events</td></tr>
+                </tbody>
+            </table>
+
+            <h3>Heat Safety</h3>
+            <p>During peak summer (June–September), the combination of high air temperature and humidity creates a heat index — the "feels like" temperature — that is far more dangerous than the thermometer reading alone suggests. A 43°C day with 65% humidity feels like approximately 56°C to the human body.</p>
+
+            <div class="warning-box">
+                <p><strong>⚠️ Qatar's Outdoor Work Ban:</strong> By law, outdoor work is prohibited from <strong>11:30 to 15:00 daily from 1 June to 15 September</strong>. The Qatar Meteorology Department issues heat warnings when feels-like temperatures exceed 47°C. Qatar Live Weather displays an automatic heat alert when feels-like exceeds 45°C.</p>
+            </div>
+
+            <p>Our heat stress index uses a simplified WBGT (Wet Bulb Globe Temperature) approach to give four safety levels:</p>
+            <ul>
+                <li>✅ <strong>Safe (&lt;27°C feels-like)</strong> — normal outdoor activity</li>
+                <li>⚠️ <strong>Caution (27–32°C)</strong> — stay hydrated; limit strenuous activity</li>
+                <li>🔶 <strong>Extreme (32–39°C)</strong> — reduce outdoor exposure; seek shade</li>
+                <li>🔴 <strong>Danger (39–46°C)</strong> — limit all outdoor activity; risk of heat stroke</li>
+                <li>☠️ <strong>Extreme Danger (&gt;46°C)</strong> — stay indoors; emergency conditions</li>
+            </ul>
+
+            <h3>UV Index Guide</h3>
+            <p>Qatar's UV index regularly reaches 11–12 (Extreme) from April through September, driven by its low latitude, clear skies, and high solar elevation angles. This is among the highest sustained UV exposure anywhere on Earth.</p>
+            <div class="uv-grid">
+                <div class="uv-card uv-low">UV 1–2<div class="uv-label">Low — No protection needed</div></div>
+                <div class="uv-card uv-mod">UV 3–5<div class="uv-label">Moderate — Sunscreen SPF 30+</div></div>
+                <div class="uv-card uv-high">UV 6–7<div class="uv-label">High — Hat &amp; shade required</div></div>
+                <div class="uv-card uv-vhigh">UV 8–10<div class="uv-label">Very High — Avoid midday sun</div></div>
+                <div class="uv-card uv-extreme">UV 11+<div class="uv-label">Extreme — Stay indoors 10–16h</div></div>
+            </div>
+
+            <h3>Dust &amp; Sandstorm Events</h3>
+            <p>The <em>Shamal</em> — a strong northwesterly wind — is the most significant wind pattern in Qatar and the wider Arabian Gulf. Shamal events, most common in May–June and again in winter, can bring sustained winds of 40–70 km/h that lift enormous quantities of desert dust, reducing visibility to under 500 metres and coating everything in a fine orange haze.</p>
+            <p>Qatar Live Weather triggers an automatic dust alert when visibility drops below 2 km and wind speeds exceed 30 km/h simultaneously. The <em>Kaus</em> (southeasterly) and <em>Barih</em> (northerly) are secondary patterns. During summer nights, the Gulf sea breeze provides relief to coastal areas.</p>
+            <div class="tip-box">
+                <p><strong>During a Shamal/sandstorm:</strong> Avoid driving if visibility is under 1 km. Keep windows closed and set air conditioning to recirculation mode. Those with respiratory conditions should wear an N95 mask outdoors. The storm typically lasts 12–36 hours.</p>
+            </div>
+
+            <h3>Rainfall</h3>
+            <p>Qatar's annual rainfall averages 70–80 mm, almost entirely between November and March. Rain is infrequent but when it occurs it can be intense — 20–30 mm in a few hours is not unusual — causing flash flooding in Doha due to flat terrain and limited storm drainage. The wettest single month is typically February. Snow has never been recorded in Qatar.</p>
+        </div>
+
+        <!-- ── DATA SOURCES ───────────────────────────────── -->
+        <div class="static-section">
+            <h2>Data Sources</h2>
+            <p>All weather data comes from freely available, reputable, openly-licensed sources:</p>
+            <ul>
+                <li><a href="https://wttr.in" target="_blank" rel="noopener">wttr.in</a> — current conditions, 3-day forecasts, hourly data, and astronomy (powered by WorldWeatherOnline). Data is fetched fresh at most every 10 minutes per location.</li>
+                <li><a href="https://aladhan.com/prayer-times-api" target="_blank" rel="noopener">Aladhan API</a> — prayer times calculated using the Umm Al-Qura (Makkah) method, appropriate for Qatar.</li>
+                <li><a href="https://wikipedia.org" target="_blank" rel="noopener">Wikipedia REST API</a> — short location summaries retrieved via the Wikipedia summary endpoint.</li>
+            </ul>
+            <p><strong>Disclaimer:</strong> This is an independent community service and is not affiliated with, endorsed by, or sourced from the Qatar Meteorology Department (QMD). For official weather warnings and forecasts, visit <a href="https://www.met.gov.qa" target="_blank" rel="noopener">met.gov.qa →</a></p>
+        </div>
+
+        <!-- ── CONTACT ─────────────────────────────────────── -->
+        <div class="static-section">
+            <h2>Contact &amp; Feedback</h2>
+            <p>Have a suggestion, found a bug, or want to get in touch? Visit the <a href="contact.html">contact page</a>. We especially welcome reports of incorrect coordinates or consistently wrong readings for specific locations.</p>
+        </div>
+
+    </div>
+
+    <footer class="footer" role="contentinfo">
+        <div class="footer-top">
+            <div class="footer-brand">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent)" aria-hidden="true">
+                    <path d="M12 2v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="M2 12h2"/><path d="m4.93 19.07 1.41-1.41"/><path d="M12 20v2"/><path d="m19.07 19.07-1.41-1.41"/><path d="M22 12h-2"/><path d="m19.07 4.93-1.41 1.41"/><circle cx="12" cy="12" r="4"/>
+                </svg>
+                <span style="font-weight:700;font-size:14px">Qatar Live Weather</span>
+            </div>
+            <nav class="footer-nav" aria-label="Footer navigation">
+                <a href="index.html">Home</a>
+                <a href="about.html">About</a>
+                <a href="privacy.html">Privacy Policy</a>
+                <a href="contact.html">Contact</a>
+            </nav>
+        </div>
+        <div class="footer-bottom">
+            <span>© 2026 Qatar Live Weather. All rights reserved.</span>
+            <div class="sig-badge">by <span>mohammedlglg</span></div>
+        </div>
+    </footer>
+
+</body>
+</html>
