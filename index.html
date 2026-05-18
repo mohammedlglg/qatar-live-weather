@@ -1,38 +1,28 @@
-<!-- ============================================================
-     PATCH FOR index.html — replace only the <head> block
-     All fixes applied:
-       #1  Canonical trailing slash
-       #7  GA4 deferred until cookie accept (gtag stub only here)
-       #8  Clean non-stuffed title
-       #12 Preload for critical assets
-       #14 Geo meta tags
-       #15 hreflang for EN/AR
-     ============================================================ -->
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Qatar Live Weather — real-time interactive weather map for Doha and all Qatar municipalities. Temperature, humidity, wind, 3-day forecast, UV index, prayer times and more. Bilingual EN/AR.">
+    <meta name="description" content="Qatar Live Weather Today — real-time interactive weather map for Doha and all Qatar municipalities. Current temperature, humidity, wind speed, 3-day forecast, hourly chart, UV index, prayer times and more. Bilingual EN/AR.">
     <meta name="keywords" content="Qatar weather today, Qatar weather, Doha weather, weather in Qatar, Qatar temperature today, live weather Qatar, طقس قطر, طقس الدوحة">
     <meta name="author" content="mohammedlglg">
     <meta name="theme-color" content="#059669">
     <meta name="robots" content="index, follow">
     <meta name="google-adsense-account" content="ca-pub-2032436364726427">
-
-    <!-- FIX #14: Geo meta tags for local SEO -->
     <meta name="geo.region" content="QA">
     <meta name="geo.placename" content="Qatar">
 
-    <!-- FIX #1: Canonical WITH trailing slash (was missing /) -->
+    <!-- Canonical -->
     <link rel="canonical" href="https://qatarliveweather.com/">
 
-    <!-- FIX #15: hreflang for bilingual EN/AR (same URL serves both) -->
+    <!-- hreflang for bilingual EN/AR -->
     <link rel="alternate" hreflang="en" href="https://qatarliveweather.com/">
     <link rel="alternate" hreflang="ar" href="https://qatarliveweather.com/">
     <link rel="alternate" hreflang="x-default" href="https://qatarliveweather.com/">
 
     <!-- Open Graph / Social sharing -->
     <meta property="og:type"        content="website">
-    <meta property="og:title"       content="Qatar Live Weather — Real-Time Map for All Municipalities">
+    <meta property="og:title"       content="Qatar Live Weather Today — Real-Time Doha & All Regions">
     <meta property="og:description" content="Interactive live weather map for Qatar with temperature, humidity, wind, forecasts, UV index, prayer times and more. Bilingual EN/AR.">
     <meta property="og:image"       content="https://qatarliveweather.com/og-image.png">
     <meta property="og:url"         content="https://qatarliveweather.com/">
@@ -44,18 +34,11 @@
     <meta name="twitter:image"      content="https://qatarliveweather.com/og-image.png">
     <meta name="twitter:site"       content="@QatarLiveWX">
 
-    <!-- FIX #8: Clean, non-stuffed title (was keyword-stuffed) -->
     <title>Qatar Live Weather — Real-Time Map for All Municipalities</title>
 
     <!-- PWA manifest & favicon -->
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-
-    <!-- FIX #12: Preload critical assets for faster LCP -->
-    <link rel="preload" href="style.css" as="style">
-    <link rel="preload" href="app.js" as="script">
-    <script src="app.js" defer></script>
-
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -82,7 +65,6 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
             gap: 16px;
-            margin-top: 20px;
         }
         .climate-card {
             background: var(--card);
@@ -168,7 +150,6 @@
           "applicationCategory": "WeatherApplication",
           "operatingSystem": "Any",
           "description": "Live weather map covering all Qatar municipalities with temperature, humidity, wind, UV index, prayer times, forecasts, and astronomy data.",
-          "inLanguage": ["en", "ar"],
           "featureList": [
             "Real-time temperature map",
             "3-day weather forecast",
@@ -189,21 +170,76 @@
     </script>
 
     <!--
-        FIX #7: Google Analytics is NOT loaded here unconditionally.
-        GA initialisation now happens inside app.js → initAnalytics(),
-        which is called only AFTER the user clicks "Accept" on the
-        cookie consent banner. This ensures GDPR compliance.
-
-        The gtag stub below is kept so gtag() calls made before consent
-        acceptance are queued safely and don't throw errors.
+    ═══════════════════════════════════════════════════════════
+    GOOGLE ANALYTICS 4 — CONSENT-GATED
+    -------------------------------------------------------
+    WHY this pattern:
+      • gtag() MUST be defined globally or any call to it
+        (e.g. from browser extensions or future code) would
+        throw a ReferenceError and crash the whole page.
+      • We define gtag() immediately so the function always
+        exists — but we set 'analytics_storage: denied' so
+        NO cookies or tracking data are written until the
+        user explicitly accepts via the cookie banner.
+      • When the user clicks Accept, app.js calls
+        gtag('consent','update',{analytics_storage:'granted'})
+        and loads the actual GA library dynamically.
+      • This is fully GDPR-compliant: no data leaves the
+        browser until consent is given.
+    ═══════════════════════════════════════════════════════════
     -->
     <script>
+        // Step 1: Always define gtag so nothing crashes.
         window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
+        function gtag(){ dataLayer.push(arguments); }
+
+        // Step 2: Default consent — everything denied.
         gtag('consent', 'default', {
-            analytics_storage: 'denied',
-            ad_storage:        'denied'
+            analytics_storage:    'denied',
+            ad_storage:           'denied',
+            ad_user_data:         'denied',
+            ad_personalization:   'denied',
+            wait_for_update:      500
         });
+
+        // Step 3: If user already accepted in a previous visit,
+        //         restore consent and load GA immediately.
+        if (localStorage.getItem('cookie_consent') === 'accepted') {
+            gtag('consent', 'update', {
+                analytics_storage:  'granted',
+                ad_storage:         'granted',
+                ad_user_data:       'granted',
+                ad_personalization: 'granted'
+            });
+            // Dynamically load the GA library
+            (function() {
+                var s = document.createElement('script');
+                s.async = true;
+                s.src = 'https://www.googletagmanager.com/gtag/js?id=G-YWEKPB5X90';
+                document.head.appendChild(s);
+            })();
+            gtag('js', new Date());
+            gtag('config', 'G-YWEKPB5X90', { anonymize_ip: true });
+        }
+
+        // Step 4: Helper called by app.js when user clicks "Accept"
+        function enableAnalytics() {
+            gtag('consent', 'update', {
+                analytics_storage:  'granted',
+                ad_storage:         'granted',
+                ad_user_data:       'granted',
+                ad_personalization: 'granted'
+            });
+            if (!window._gaLoaded) {
+                window._gaLoaded = true;
+                var s = document.createElement('script');
+                s.async = true;
+                s.src = 'https://www.googletagmanager.com/gtag/js?id=G-YWEKPB5X90';
+                document.head.appendChild(s);
+                gtag('js', new Date());
+                gtag('config', 'G-YWEKPB5X90', { anonymize_ip: true });
+            }
+        }
     </script>
 
     <!--
