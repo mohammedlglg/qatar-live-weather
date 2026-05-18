@@ -1,0 +1,11 @@
+# robots.txt — Qatar Live Weather
+# https://qatarliveweather.com
+
+User-agent: *
+Allow: /
+
+# Disallow crawling of URL parameter variants to avoid duplicate content
+Disallow: /*?loc=*
+Disallow: /*?lat=*
+
+Sitemap: https://qatarliveweather.com/sitemap.xml

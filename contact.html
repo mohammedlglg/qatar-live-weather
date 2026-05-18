@@ -4,7 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Contact Qatar Live Weather — send feedback, report bugs, or suggest features for our real-time Qatar weather map.">
-    <meta name="robots" content="index, follow">
+
+    <!-- FIX #10: noindex — contact pages add no search value -->
+    <meta name="robots" content="noindex, follow">
+
+    <!-- FIX #2: Canonical tag (was missing entirely) -->
+    <link rel="canonical" href="https://qatarliveweather.com/contact.html">
+
     <title>Contact — Qatar Live Weather</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -47,14 +53,37 @@
         <div class="static-section">
             <h2>Send a Message</h2>
             <p>Fill in the form below and we'll get back to you as soon as possible. Alternatively, you can reach out directly via GitHub or Twitter.</p>
-            <form class="contact-form" action="mailto:contact@qatarliveweather.com" method="get" enctype="text/plain">
+
+            <!--
+                FIX #3: Replaced broken mailto: form with Formspree.
+                Steps to activate:
+                  1. Go to https://formspree.io and sign up for free.
+                  2. Create a new form — paste your email address.
+                  3. Copy the form endpoint URL (e.g. https://formspree.io/f/xyzabcde).
+                  4. Replace YOUR_FORM_ID below with your actual Formspree form ID.
+                Formspree free tier: 50 submissions/month, no backend required.
+            -->
+            <form class="contact-form"
+                  action="https://formspree.io/f/YOUR_FORM_ID"
+                  method="POST">
+
+                <!-- Honeypot field to block spam bots -->
+                <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off">
+
+                <!-- Redirect after submission (optional — Formspree default page used if omitted) -->
+                <!-- <input type="hidden" name="_next" value="https://qatarliveweather.com/contact.html?sent=1"> -->
+
                 <div class="form-group">
                     <label for="cf-name">Your Name</label>
-                    <input type="text" id="cf-name" name="name" placeholder="e.g. Ahmed Al-Mansouri" autocomplete="name" required>
+                    <input type="text" id="cf-name" name="name"
+                           placeholder="e.g. Ahmed Al-Mansouri"
+                           autocomplete="name" required>
                 </div>
                 <div class="form-group">
                     <label for="cf-email">Email Address</label>
-                    <input type="email" id="cf-email" name="email" placeholder="you@example.com" autocomplete="email" required>
+                    <input type="email" id="cf-email" name="email"
+                           placeholder="you@example.com"
+                           autocomplete="email" required>
                 </div>
                 <div class="form-group">
                     <label for="cf-subject">Subject</label>
@@ -68,7 +97,9 @@
                 </div>
                 <div class="form-group">
                     <label for="cf-msg">Message</label>
-                    <textarea id="cf-msg" name="body" placeholder="Tell us what's on your mind..." required></textarea>
+                    <textarea id="cf-msg" name="message"
+                              placeholder="Tell us what's on your mind..."
+                              required></textarea>
                 </div>
                 <button type="submit" class="form-submit">Send Message →</button>
             </form>
