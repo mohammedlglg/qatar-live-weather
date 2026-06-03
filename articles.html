@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Qatar Weather Guides — original articles about Qatar's climate, summer heat safety, sandstorms, the best time to visit, and how to read UV index readings.">
+    <meta name="robots" content="index, follow">
+    <title>Qatar Weather Guides & Climate Articles — Qatar Live Weather</title>
+    <link rel="canonical" href="https://qatarliveweather.com/articles.html">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Open Graph -->
+    <meta property="og:type"        content="website">
+    <meta property="og:title"       content="Qatar Weather Guides & Climate Articles">
+    <meta property="og:description" content="Original articles covering Qatar's extreme climate, summer survival, sandstorms, UV safety, and best travel seasons.">
+    <meta property="og:image"       content="https://qatarliveweather.com/og-image.png">
+    <meta property="og:url"         content="https://qatarliveweather.com/articles.html">
+
+    <!-- JSON-LD BreadcrumbList -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {"@type":"ListItem","position":1,"name":"Home","item":"https://qatarliveweather.com/"},
+        {"@type":"ListItem","position":2,"name":"Weather Guides","item":"https://qatarliveweather.com/articles.html"}
+      ]
+    }
+    </script>
+
+    <style>
+        /* ── ARTICLES PAGE STYLES ─────────────────────────────── */
+        .articles-hero {
+            background: linear-gradient(135deg, var(--accent-light) 0%, var(--card) 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 48px 24px 40px;
+            text-align: center;
+        }
+        .articles-hero h1 {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--txt);
+            margin-bottom: 10px;
+        }
+        .articles-hero p {
+            font-size: 14px;
+            color: var(--txt2);
+            max-width: 520px;
+            margin: 0 auto;
+            line-height: 1.7;
+        }
+        .articles-hero .hero-icon {
+            font-size: 44px;
+            margin-bottom: 14px;
+        }
+
+        /* ── ARTICLE GRID ─────────────────────────────────────── */
+        .articles-wrap {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 24px 80px;
+        }
+        .article-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin-bottom: 32px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            transition: var(--transition);
+        }
+        .article-card:hover {
+            box-shadow: var(--shadow-hover);
+            border-color: var(--border-hover);
+        }
+        .article-header {
+            padding: 24px 28px 0;
+        }
+        .article-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: var(--accent-light);
+            color: var(--accent-dark);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .6px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+        }
+        [data-theme="dark"] .article-tag {
+            color: var(--accent);
+        }
+        .article-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--txt);
+            margin-bottom: 6px;
+            line-height: 1.3;
+        }
+        .article-meta {
+            font-size: 11px;
+            color: var(--txt3);
+            margin-bottom: 0;
+        }
+        .article-body {
+            padding: 20px 28px 28px;
+        }
+        .article-body p {
+            font-size: 14px;
+            color: var(--txt2);
+            line-height: 1.85;
+            margin-bottom: 16px;
+        }
+        .article-body p:last-child {
+            margin-bottom: 0;
+        }
+        .article-body h3 {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--txt);
+            margin: 22px 0 10px;
+        }
+        .article-body ul, .article-body ol {
+            padding-left: 20px;
+            margin-bottom: 16px;
+        }
+        .article-body li {
+            font-size: 14px;
+            color: var(--txt2);
+            line-height: 1.8;
+            margin-bottom: 6px;
+        }
+        .article-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 0 28px;
+        }
+
+        /* ── INLINE INFO BOXES ────────────────────────────────── */
+        .info-box {
+            background: var(--accent-light);
+            border-left: 3px solid var(--accent);
+            border-radius: 6px;
+            padding: 14px 16px;
+            margin: 16px 0;
+        }
+        .info-box p {
+            font-size: 13px !important;
+            color: var(--txt) !important;
+            margin: 0 !important;
+            line-height: 1.7 !important;
+        }
+        .warn-box {
+            background: #fef3c7;
+            border-left: 3px solid #f59e0b;
+            border-radius: 6px;
+            padding: 14px 16px;
+            margin: 16px 0;
+        }
+        [data-theme="dark"] .warn-box {
+            background: #451a03;
+        }
+        .warn-box p {
+            font-size: 13px !important;
+            color: #92400e !important;
+            margin: 0 !important;
+            line-height: 1.7 !important;
+        }
+        [data-theme="dark"] .warn-box p {
+            color: #fbbf24 !important;
+        }
+
+        /* ── DATA TABLE ───────────────────────────────────────── */
+        .art-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin: 16px 0;
+        }
+        .art-table th {
+            background: var(--bg);
+            color: var(--txt3);
+            font-weight: 700;
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 2px solid var(--border);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .4px;
+        }
+        .art-table td {
+            padding: 8px 12px;
+            color: var(--txt2);
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+        .art-table tr:last-child td {
+            border-bottom: none;
+        }
+        .art-table tr:hover td {
+            background: var(--bg);
+        }
+
+        /* ── STAT STRIP ───────────────────────────────────────── */
+        .stat-strip {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 10px;
+            margin: 16px 0;
+        }
+        .stat-chip {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 14px;
+            text-align: center;
+        }
+        .stat-chip .sc-val {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--accent-dark);
+        }
+        [data-theme="dark"] .stat-chip .sc-val {
+            color: var(--accent);
+        }
+        .stat-chip .sc-label {
+            font-size: 11px;
+            color: var(--txt3);
+            margin-top: 2px;
+            font-weight: 500;
+        }
+
+        /* ── INDEX TOC ────────────────────────────────────────── */
+        .toc {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            margin-bottom: 32px;
+        }
+        .toc h2 {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--txt3);
+            text-transform: uppercase;
+            letter-spacing: .6px;
+            margin-bottom: 12px;
+        }
+        .toc ol {
+            padding-left: 18px;
+            margin: 0;
+        }
+        .toc li {
+            font-size: 14px;
+            color: var(--txt2);
+            line-height: 1.9;
+        }
+        .toc a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .toc a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 600px) {
+            .article-header, .article-body { padding: 18px; }
+            .article-divider { margin: 0 18px; }
+            .article-title { font-size: 17px; }
+            .stat-strip { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
+        <div class="nav-inner">
+            <a class="nav-brand" href="index.html" style="text-decoration:none">
+                <svg class="brand-icon" width="22" height="22" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                     aria-hidden="true">
+                    <path d="M12 2v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="M2 12h2"/>
+                    <path d="m4.93 19.07 1.41-1.41"/><path d="M12 20v2"/>
+                    <path d="m19.07 19.07-1.41-1.41"/><path d="M22 12h-2"/>
+                    <path d="m19.07 4.93-1.41 1.41"/><circle cx="12" cy="12" r="4"/>
+                </svg>
+                <span>Qatar Live Weather</span>
+            </a>
+            <div class="nav-actions">
+                <a href="index.html" class="icon-btn" style="text-decoration:none">← Back to Map</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <div class="articles-hero">
+        <div class="hero-icon">📰</div>
+        <h1>Qatar Weather Guides</h1>
+        <p>Original articles about Qatar's extreme climate — from summer heat survival to sandstorm safety, UV index explained, and the best time of year to visit.</p>
+    </div>
+
+    <div class="articles-wrap">
+
+        <!-- TABLE OF CONTENTS -->
+        <div class="toc" role="navigation" aria-label="Article list">
+            <h2>📋 In This Section</h2>
+            <ol>
+                <li><a href="#article-summer">Surviving Qatar's Summer: A Practical Heat Safety Guide</a></li>
+                <li><a href="#article-shamal">Understanding Shamal Winds and Sandstorms in Qatar</a></li>
+                <li><a href="#article-best-time">Best Time to Visit Qatar — Month by Month</a></li>
+                <li><a href="#article-uv">Qatar's UV Index: Why It's So High and How to Protect Yourself</a></li>
+            </ol>
+        </div>
+
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <!-- ARTICLE 1: Summer Heat Safety -->
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <article class="article-card" id="article-summer" aria-labelledby="art1-title">
+            <div class="article-header">
+                <div class="article-tag">🔥 Heat Safety</div>
+                <h2 class="article-title" id="art1-title">Surviving Qatar's Summer: A Practical Heat Safety Guide</h2>
+                <p class="article-meta">Updated June 2026 &nbsp;·&nbsp; 6 min read</p>
+            </div>
+            <div class="article-divider"></div>
+            <div class="article-body">
+
+                <p>Qatar's summer is among the most extreme experienced by any urban population on Earth. From June through September, daily maximum temperatures in Doha routinely exceed 40°C, and the combination of Arabian Gulf humidity pushes the heat index — what your body actually feels — to 50°C or higher on many afternoons. Understanding how this heat works, and how to manage it, is not optional for anyone living in or visiting Qatar during these months.</p>
+
+                <div class="stat-strip" role="list" aria-label="Summer climate statistics">
+                    <div class="stat-chip" role="listitem"><div class="sc-val">44°C</div><div class="sc-label">Avg July High</div></div>
+                    <div class="stat-chip" role="listitem"><div class="sc-val">55°C+</div><div class="sc-label">Peak Heat Index</div></div>
+                    <div class="stat-chip" role="listitem"><div class="sc-val">UV 11</div><div class="sc-label">Extreme UV Rating</div></div>
+                    <div class="stat-chip" role="listitem"><div class="sc-val">70%+</div><div class="sc-label">Peak Humidity</div></div>
+                </div>
+
+                <h3>Why Qatar's Summer Is Uniquely Dangerous</h3>
+                <p>Most people think of heat risk purely in terms of air temperature. But in Qatar, the real danger comes from the combination of temperature and humidity. The human body cools itself by sweating — but sweat can only evaporate into air that isn't already saturated with moisture. When relative humidity climbs above 60–70%, as it regularly does in Doha during August nights, the body's cooling system becomes severely impaired. This is why a 43°C day with 65% humidity can produce a heat index equivalent to approximately 56°C — far beyond what the body can safely manage with prolonged exposure.</p>
+
+                <p>The medical term for the most severe outcome is heat stroke, which occurs when the body's core temperature rises above 40°C and the brain, kidneys, and other organs begin to fail. Unlike heat exhaustion — which produces heavy sweating, nausea, and dizziness — heat stroke is a life-threatening emergency requiring immediate hospital care. In Qatar's peak summer, the gap between uncomfortable and dangerous can close within 15–20 minutes of unprotected outdoor exposure.</p>
+
+                <h3>Qatar's Outdoor Work Ban</h3>
+                <div class="warn-box">
+                    <p><strong>⚠️ Legal Requirement:</strong> Under Qatar Labour Law, all outdoor work is prohibited between <strong>10:00 and 15:30 daily from 1 June to 15 September</strong> (updated to a stricter window from 2024). This applies to construction, landscaping, road work, and any labour performed in direct sunlight. Employers who violate this ban face significant fines. The Qatar Ministry of Labour conducts regular inspections throughout the summer months.</p>
+                </div>
+
+                <h3>Practical Daily Heat Safety Tips</h3>
+                <p>For residents and visitors who cannot avoid being outdoors during summer, the following measures are evidence-based and widely recommended by Qatar's public health authorities:</p>
+                <ul>
+                    <li><strong>Hydrate before you feel thirsty.</strong> By the time thirst registers, your body is already mildly dehydrated. Aim for 3–4 litres of water per day during summer, more if you are physically active. Avoid sugary drinks and excess caffeine, which accelerate fluid loss.</li>
+                    <li><strong>Schedule outdoor activity correctly.</strong> Before 8:00 in the morning and after 19:00 in the evening are the safest windows. The sun's angle is lowest during these periods, and temperatures are 5–8°C cooler than afternoon peaks.</li>
+                    <li><strong>Cover up, don't strip down.</strong> Loose, light-coloured, breathable clothing (such as linen or moisture-wicking synthetics) provides better protection than exposed skin. Light fabric reflects solar radiation and slows sweat evaporation to extend cooling.</li>
+                    <li><strong>Know the warning signs.</strong> Heavy sweating, pale or red flushed skin, muscle cramps, headache, and dizziness are all early heat exhaustion symptoms. Move to a cool environment, drink water slowly, and rest immediately. If symptoms include confusion, loss of consciousness, or the person stops sweating entirely — call 999 immediately.</li>
+                    <li><strong>Never leave children or pets in parked cars.</strong> Inside a parked car in Qatar's summer sun, temperatures can reach 70°C within 10 minutes, even with windows cracked.</li>
+                    <li><strong>Use Qatar Live Weather's heat alert.</strong> Our map automatically displays a red heat alert banner when the feels-like temperature at any location exceeds 45°C, giving you a real-time warning before you head outside.</li>
+                </ul>
+
+                <h3>The Indoor-Outdoor Temperature Shock Problem</h3>
+                <p>One under-discussed risk of Qatar's summer is the extreme contrast between heavily air-conditioned indoor spaces (often 18–21°C) and the outdoor heat. Repeatedly moving between these environments places significant cardiovascular strain, particularly on older adults and those with heart conditions. Gradual acclimatisation — stepping through a shaded transition space rather than directly from a cold lobby into 45°C sun — reduces this shock considerably.</p>
+
+                <div class="info-box">
+                    <p><strong>📍 Monitor your location in real time:</strong> Use the <a href="index.html">Qatar Live Weather map</a> to check the current heat index and UV level for your exact municipality before heading outdoors. The dashboard shows a 3-day forecast and hourly strips so you can plan your day around the coolest windows.</p>
+                </div>
+
+            </div>
+        </article>
+
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <!-- ARTICLE 2: Shamal Winds and Sandstorms -->
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <article class="article-card" id="article-shamal" aria-labelledby="art2-title">
+            <div class="article-header">
+                <div class="article-tag">🌬️ Sandstorms</div>
+                <h2 class="article-title" id="art2-title">Understanding Shamal Winds and Sandstorms in Qatar</h2>
+                <p class="article-meta">Updated May 2026 &nbsp;·&nbsp; 5 min read</p>
+            </div>
+            <div class="article-divider"></div>
+            <div class="article-body">
+
+                <p>Qatar's weather is shaped not only by heat but by wind. The most significant and disruptive wind pattern in the country — and across the wider Arabian Gulf — is the <em>Shamal</em> (Arabic: شمال, meaning "north"). Understanding when Shamal events occur, what they look like on the weather map, and how to stay safe during them is essential knowledge for anyone spending time in Qatar.</p>
+
+                <h3>What Is the Shamal?</h3>
+                <p>The Shamal is a persistent northwesterly or northerly wind that blows across the Arabian Peninsula, the Arabian Gulf, and into the Gulf of Oman. It originates from high-pressure systems forming over the interior of the Arabian Peninsula or northern Iraq and Syria, and is driven by the pressure gradient between these high-pressure zones and lower-pressure areas to the south and east.</p>
+
+                <p>In Qatar, the Shamal occurs in two primary seasons. The <strong>winter Shamal</strong> (December through March) tends to be stronger and more sustained, with winds of 40–70 km/h lasting several days. These events are typically dry and bring sharp overnight temperature drops along with significant dust. The <strong>summer Shamal</strong> (May through early July) is often the more visually dramatic: it arrives during the transition from dry spring heat to humid summer conditions, producing the spectacular red-orange dust walls — called <em>haboobs</em> — that can be seen approaching from the northwest horizon.</p>
+
+                <h3>Wind Speeds and Visibility Impact</h3>
+                <table class="art-table" aria-label="Shamal wind speed effects">
+                    <thead>
+                        <tr>
+                            <th>Wind Speed</th>
+                            <th>Beaufort Scale</th>
+                            <th>Typical Visibility</th>
+                            <th>Impact Level</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>20–30 km/h</td><td>4 (Moderate breeze)</td><td>10 km+</td><td>Dusty; minor disruption</td></tr>
+                        <tr><td>30–50 km/h</td><td>5–6 (Fresh–Strong)</td><td>2–8 km</td><td>Dust haze; reduced visibility</td></tr>
+                        <tr><td>50–70 km/h</td><td>7 (Near gale)</td><td>500 m – 2 km</td><td>Sandstorm; driving hazardous</td></tr>
+                        <tr><td>70+ km/h</td><td>8–9 (Gale)</td><td>Under 200 m</td><td>Severe; stay indoors</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Secondary Wind Patterns</h3>
+                <p>The Shamal is the dominant wind, but Qatar experiences other notable patterns. The <strong>Kaus</strong> (كوس) is a southeasterly or easterly wind that brings warm, humid air from the Gulf and sometimes light rain in winter. The <strong>Barih</strong> (باريح) is a hot, dry southerly wind associated with high dust concentrations in summer and spring. During summer nights, a local <strong>sea breeze</strong> develops along the coast — particularly in Doha, The Pearl, and Lusail — providing 3–5°C of relief from inland temperatures and a temporary reduction in dust loading.</p>
+
+                <h3>Health Risks During Dust Events</h3>
+                <p>Sandstorm dust in Qatar is not simply soil — it is a complex mixture of fine particulate matter (PM2.5 and PM10), mineral silica, heavy metals, and microbiological material stirred from desert surfaces. Prolonged inhalation during severe events can aggravate asthma and chronic obstructive pulmonary disease (COPD), cause short-term respiratory irritation in healthy individuals, and — in rare cases of extreme exposure — contribute to long-term lung disease.</p>
+                <ul>
+                    <li>Stay indoors with windows and doors closed during visibility below 1 km.</li>
+                    <li>If driving is unavoidable, slow down significantly and use low-beam headlights — other drivers may be nearly invisible.</li>
+                    <li>Wear a properly-fitted N95 mask or a damp cloth over the nose and mouth if caught outdoors.</li>
+                    <li>Rinse eyes with clean water if exposed; remove contact lenses before a dust event if possible.</li>
+                    <li>After the event, wipe surfaces indoors — fine dust particles settle on furniture, electronics, and food preparation areas.</li>
+                </ul>
+
+                <div class="info-box">
+                    <p><strong>🗺️ Dust alert on Qatar Live Weather:</strong> Our map automatically triggers a purple dust/sandstorm alert banner when visibility drops below 2 km and wind speed exceeds 30 km/h at any monitored location. Check the live map during suspected Shamal events for real-time readings across all seven municipalities.</p>
+                </div>
+
+            </div>
+        </article>
+
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <!-- ARTICLE 3: Best Time to Visit -->
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <article class="article-card" id="article-best-time" aria-labelledby="art3-title">
+            <div class="article-header">
+                <div class="article-tag">✈️ Travel Guide</div>
+                <h2 class="article-title" id="art3-title">Best Time to Visit Qatar — Month by Month Weather Guide</h2>
+                <p class="article-meta">Updated April 2026 &nbsp;·&nbsp; 5 min read</p>
+            </div>
+            <div class="article-divider"></div>
+            <div class="article-body">
+
+                <p>Qatar has become one of the Gulf's most visited destinations, attracting millions of tourists annually to its museums, desert landscapes, coastal corniche, and world-class sporting events. But Qatar's climate is sharply divided between a pleasant, mild winter and a punishing summer. Choosing the right time to visit makes an enormous practical difference to your experience.</p>
+
+                <h3>The Peak Season: November to April</h3>
+                <p>The period from November through to mid-April is when Qatar is at its most hospitable for outdoor activities, sightseeing, and travel. Temperatures during this window range from a low of around 13°C on winter nights to a pleasant 30–33°C on warmer spring afternoons. The air is considerably drier than in summer, UV levels drop to moderate (UV 4–6), and occasional light showers make the landscape briefly green.</p>
+
+                <p><strong>December and January</strong> are the absolute coolest months, with average highs of 22–24°C — perfect for visiting the Souq Waqif, Katara Cultural Village, Al Zubarah Fort, and the extensive outdoor spaces of Qatar's desert. This is also when the Qatar Tourism Authority typically concentrates its major events calendar, including the Qatar International Food Festival and various sports tournaments.</p>
+
+                <p><strong>February and March</strong> remain very comfortable, though the temperature trend is rising. March is the start of the spring Shamal season, which means dust events become more frequent. Afternoon highs climb to 29–34°C, and UV starts to climb toward "High" classification.</p>
+
+                <h3>The Shoulder Seasons: April–May and October</h3>
+                <p>April and October are transitional months that can still offer reasonable conditions, particularly for visitors who are acclimatised to warm weather. April sees highs of 33–37°C with moderate humidity — manageable with shade and good hydration, though midday outdoor activity becomes tiring. October is arguably the better of the two shoulder months: summer's humidity is breaking down, temperatures are falling from 40°C toward 35°C, and evenings become genuinely comfortable again from around the third week of October onward.</p>
+
+                <div class="warn-box">
+                    <p><strong>⚠️ Ramadan timing:</strong> The Islamic month of Ramadan shifts earlier each year. During Ramadan, eating, drinking, and smoking in public during daylight hours is restricted by law. Many restaurants close during the day. Plan your trip by checking the Ramadan calendar — it can coincide with peak tourist season in some years.</p>
+                </div>
+
+                <h3>Month-by-Month Summary</h3>
+                <table class="art-table" aria-label="Monthly weather summary for Qatar">
+                    <thead>
+                        <tr>
+                            <th>Month</th>
+                            <th>Avg High</th>
+                            <th>Condition</th>
+                            <th>Tourism Rating</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>January</td><td>22°C</td><td>Cool, dry, sunny</td><td>⭐⭐⭐⭐⭐ Excellent</td></tr>
+                        <tr><td>February</td><td>24°C</td><td>Mild, occasional rain</td><td>⭐⭐⭐⭐⭐ Excellent</td></tr>
+                        <tr><td>March</td><td>29°C</td><td>Warm, dusty periods</td><td>⭐⭐⭐⭐ Very Good</td></tr>
+                        <tr><td>April</td><td>35°C</td><td>Hot, rising UV</td><td>⭐⭐⭐ Good (mornings only)</td></tr>
+                        <tr><td>May</td><td>40°C</td><td>Very hot, Shamal events</td><td>⭐⭐ Limited</td></tr>
+                        <tr><td>June</td><td>43°C</td><td>Extreme heat &amp; humidity</td><td>⭐ Avoid outdoors</td></tr>
+                        <tr><td>July</td><td>44°C</td><td>Peak heat — most oppressive</td><td>⭐ Avoid outdoors</td></tr>
+                        <tr><td>August</td><td>44°C</td><td>Peak heat &amp; humidity</td><td>⭐ Avoid outdoors</td></tr>
+                        <tr><td>September</td><td>41°C</td><td>Very hot, slightly easing</td><td>⭐ Limited</td></tr>
+                        <tr><td>October</td><td>36°C</td><td>Cooling; evenings pleasant</td><td>⭐⭐⭐ Good</td></tr>
+                        <tr><td>November</td><td>29°C</td><td>Pleasant, breezy</td><td>⭐⭐⭐⭐ Very Good</td></tr>
+                        <tr><td>December</td><td>23°C</td><td>Cool, dry — best month</td><td>⭐⭐⭐⭐⭐ Excellent</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Visiting in Summer: Not Impossible, But Plan Carefully</h3>
+                <p>Despite the extreme heat, summer travel to Qatar is not unheard of — particularly for visitors who are primarily interested in indoor attractions. The National Museum of Qatar, the Museum of Islamic Art, Villaggio Mall, and the indoor attractions of Katara are fully air-conditioned and accessible year-round. Hotel rates in summer can be significantly lower than in peak winter season, making it potentially good value for the heat-tolerant visitor willing to plan all outdoor activity for the very early morning or after sunset.</p>
+
+                <div class="info-box">
+                    <p><strong>📍 Plan your visit with live weather data:</strong> Before any outdoor activity in Qatar, check the current conditions on the <a href="index.html">Qatar Live Weather map</a>. The 3-day forecast and hourly strip help you identify the coolest windows of the day — whether you're visiting in December or braving July.</p>
+                </div>
+
+            </div>
+        </article>
+
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <!-- ARTICLE 4: UV Index -->
+        <!-- ══════════════════════════════════════════════════════════ -->
+        <article class="article-card" id="article-uv" aria-labelledby="art4-title">
+            <div class="article-header">
+                <div class="article-tag">☀️ UV Safety</div>
+                <h2 class="article-title" id="art4-title">Qatar's UV Index: Why It's So High and How to Protect Yourself</h2>
+                <p class="article-meta">Updated April 2026 &nbsp;·&nbsp; 4 min read</p>
+            </div>
+            <div class="article-divider"></div>
+            <div class="article-body">
+
+                <p>If you've used Qatar Live Weather and noticed the UV index reaching 11 or 12 in summer, you might wonder what exactly that means — and whether it's as serious as it sounds. The short answer is yes. Qatar experiences some of the highest sustained UV radiation levels of any country on Earth, and the health implications go well beyond an uncomfortable sunburn.</p>
+
+                <h3>What Is the UV Index?</h3>
+                <p>The UV Index (UVI) is an internationally standardised measure of the intensity of ultraviolet radiation from the sun at the Earth's surface. It was developed jointly by the World Health Organization (WHO), the United Nations Environment Programme (UNEP), and the World Meteorological Organization (WMO) as a public health communication tool. The scale starts at 0 (no UV) and has no upper limit in theory, though most habitable locations on Earth reach a maximum of 11–16 on the clearest summer days near the equator.</p>
+
+                <p>UV radiation is divided into UVA (315–400 nm) and UVB (280–315 nm). UVB is primarily responsible for sunburn and plays a dominant role in skin cancer development. UVA penetrates deeper into the skin, contributing to photoageing (wrinkles, age spots) and also to cancer risk. Both are measured together in the UVI reading.</p>
+
+                <h3>Why Is Qatar's UV So Extreme?</h3>
+                <p>Several geographic and atmospheric factors combine to make Qatar's UV radiation exceptionally intense:</p>
+                <ul>
+                    <li><strong>Low latitude:</strong> Qatar sits at approximately 25°N latitude, meaning the sun reaches very high angles in the sky during summer — closer to vertical than anywhere in Europe or North America. The shorter the atmospheric path the sun's rays travel, the less UV is absorbed before reaching the surface.</li>
+                    <li><strong>Clear skies:</strong> Qatar averages 9–11 sunshine hours per day year-round. Cloud cover is the single biggest natural reducer of UV intensity; Qatar has very little of it for most of the year.</li>
+                    <li><strong>High solar elevation angles:</strong> In June and July, the sun's elevation at solar noon in Doha reaches approximately 87°, nearly directly overhead. At this angle, UV intensity is at its theoretical maximum for the latitude.</li>
+                    <li><strong>Reflective surfaces:</strong> Sand, concrete, and open water all reflect UV radiation, adding to the total dose received even in shaded areas near these surfaces.</li>
+                </ul>
+
+                <h3>UV Index Scale and Recommended Actions</h3>
+                <table class="art-table" aria-label="UV Index scale and safety guidance">
+                    <thead>
+                        <tr>
+                            <th>UV Index</th>
+                            <th>Category</th>
+                            <th>Unprotected Burn Time</th>
+                            <th>Recommended Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>1–2</td><td>Low</td><td>60+ minutes</td><td>No protection needed for most skin types</td></tr>
+                        <tr><td>3–5</td><td>Moderate</td><td>30–45 min</td><td>SPF 30+ sunscreen; seek shade at midday</td></tr>
+                        <tr><td>6–7</td><td>High</td><td>15–25 min</td><td>Hat, sunglasses, SPF 50+; limit midday exposure</td></tr>
+                        <tr><td>8–10</td><td>Very High</td><td>10–15 min</td><td>Avoid 10:00–16:00 sun; cover up fully</td></tr>
+                        <tr><td>11+</td><td>Extreme</td><td>Under 10 min</td><td>Stay indoors during 10:00–16:00 if possible</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Long-Term Health Risks</h3>
+                <p>Beyond the immediate risk of sunburn, chronic high UV exposure as experienced in Qatar carries measurable long-term health consequences. Skin cancer — particularly squamous cell carcinoma and melanoma — is more prevalent in populations with high cumulative UV exposure. Cataracts and other eye conditions, including pterygium (a growth of tissue across the white of the eye that is common in Gulf populations), are directly linked to UV exposure without eye protection. For outdoor workers in Qatar, cumulative lifetime UV dose is a genuine occupational health concern.</p>
+
+                <h3>Practical UV Protection in Qatar</h3>
+                <ul>
+                    <li>Apply SPF 50+ broad-spectrum sunscreen (UVA and UVB) 20 minutes before outdoor exposure and reapply every 2 hours, or after sweating.</li>
+                    <li>Wear UV-blocking sunglasses rated UV400 or higher. Polarised lenses reduce glare from sand and water but the UV400 rating is what actually protects against radiation.</li>
+                    <li>A wide-brimmed hat (brim of at least 7.5 cm) reduces UV reaching the face, neck, and ears by approximately 70%.</li>
+                    <li>Lightweight, tightly-woven long-sleeved clothing provides significant protection — this is why traditional Qatari dress is well-adapted to the climate.</li>
+                    <li>Remember that UV penetrates car windows (UVA especially) and reflects off sand, water, and buildings. Shade is not complete protection.</li>
+                </ul>
+
+                <div class="info-box">
+                    <p><strong>☀️ Check live UV readings by location:</strong> Qatar Live Weather shows the current UV index for each municipality, colour-coded from green (Low) through to purple (Extreme). Click any map marker and look at the UV tile in the dashboard. The 3-day forecast also shows the expected maximum UV for each upcoming day.</p>
+                </div>
+
+            </div>
+        </article>
+
+        <!-- BACK LINK -->
+        <div style="text-align:center; padding-top: 12px;">
+            <a href="index.html" class="icon-btn" style="text-decoration:none; display:inline-flex;">
+                🗺️ &nbsp;Open the Live Weather Map
+            </a>
+        </div>
+
+    </div><!-- /.articles-wrap -->
+
+    <footer class="footer" role="contentinfo">
+        <div class="footer-top">
+            <div class="footer-brand">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                     style="color:var(--accent)" aria-hidden="true">
+                    <path d="M12 2v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="M2 12h2"/>
+                    <path d="m4.93 19.07 1.41-1.41"/><path d="M12 20v2"/>
+                    <path d="m19.07 19.07-1.41-1.41"/><path d="M22 12h-2"/>
+                    <path d="m19.07 4.93-1.41 1.41"/><circle cx="12" cy="12" r="4"/>
+                </svg>
+                <span style="font-weight:700;font-size:14px">Qatar Live Weather</span>
+            </div>
+            <nav class="footer-nav" aria-label="Footer navigation">
+                <a href="index.html">Home</a>
+                <a href="about.html">About</a>
+                <a href="articles.html" aria-current="page">Weather Guides</a>
+                <a href="privacy.html">Privacy Policy</a>
+                <a href="contact.html">Contact</a>
+            </nav>
+        </div>
+        <div class="footer-bottom">
+            <span>© 2026 Qatar Live Weather. All rights reserved.</span>
+            <span class="footer-disclaimer">Not affiliated with Qatar Meteorology Department. Data sourced from wttr.in.</span>
+            <div class="sig-badge">by <span>mohammedlglg</span></div>
+        </div>
+    </footer>
+
+</body>
+</html>

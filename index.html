@@ -143,58 +143,22 @@
           "url": "https://qatarliveweather.com/",
           "applicationCategory": "WeatherApplication",
           "operatingSystem": "Any",
-          "description": "Live weather map covering all Qatar municipalities with temperature, humidity, wind, UV index, prayer times, forecasts, and astronomy data.",
-          "featureList": [
-            "Real-time temperature map",
-            "3-day weather forecast",
-            "Hourly weather forecast",
-            "UV Index tracking",
-            "Prayer times integration",
-            "Arabic / English bilingual",
-            "Dark mode support",
-            "Offline PWA support"
-          ],
-          "areaServed": {
-            "@type": "Country",
-            "name": "Qatar"
-          }
+          "description": "Live weather map covering all Qatar municipalities with temperature, humidity, wind, UV index, prayer times, forecasts, and astronomy data."
         }
       ]
     }
     </script>
-
-    <!-- Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-YWEKPB5X90"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-YWEKPB5X90');
-    </script>
-
-    <!--
-        NOTE: Google AdSense script is loaded AFTER weather data renders (see app.js → initAds).
-        This prevents ads from showing on an empty/loading screen, complying with
-        Google's "ads on screens without publisher content" policy.
-    -->
 </head>
 <body>
 
-    <!-- ── HEAT / DUST ALERT BANNER ──────────────────────────── -->
-    <div id="alert-banner" class="alert-banner" style="display:none" role="alert" aria-live="assertive">
-        <span id="alert-icon">⚠️</span>
-        <span id="alert-text"></span>
-        <button class="alert-dismiss" id="alert-dismiss" aria-label="Dismiss alert">✕</button>
-    </div>
-
-    <!-- ── COOKIE CONSENT BANNER ─────────────────────────────── -->
-    <div id="cookie-banner" class="cookie-banner" role="dialog" aria-label="Cookie consent" aria-modal="false" style="display:none">
+    <!-- ── COOKIE CONSENT BANNER ───────────────────────────────── -->
+    <div class="cookie-banner" id="cookie-banner" role="dialog" aria-labelledby="cookie-title" aria-describedby="cookie-desc">
         <div class="cookie-inner">
             <div class="cookie-text">
                 <span class="cookie-icon" aria-hidden="true">🍪</span>
                 <div>
                     <strong id="cookie-title">We use cookies</strong>
-                    <p id="cookie-desc">This site uses Google Analytics and Google AdSense cookies to improve your experience and serve relevant ads. See our <a href="privacy.html" id="cookie-privacy-link">Privacy Policy</a>.</p>
+                    <p id="cookie-desc">We use Google Analytics and AdSense cookies to improve your experience and serve relevant ads. See our <a href="privacy.html" id="cookie-privacy-link">Privacy Policy</a>.</p>
                 </div>
             </div>
             <div class="cookie-actions">
@@ -219,6 +183,8 @@
                 <h1 class="nav-brand-title" id="nav-title" style="font-size:inherit;font-weight:inherit;margin:0;display:inline">Qatar Live Weather</h1>
             </div>
             <div class="nav-actions">
+                <!-- Weather Guides link -->
+                <a href="articles.html" class="icon-btn" style="text-decoration:none">📰 Guides</a>
                 <!-- Language pill -->
                 <div class="lang-pill" role="group" aria-label="Language selector">
                     <button id="btn-en" class="lang-btn active" aria-pressed="true" aria-label="Switch to English">EN</button>
@@ -423,6 +389,7 @@
             </div>
             <nav class="footer-nav" aria-label="Footer navigation">
                 <a href="about.html">About</a>
+                <a href="articles.html">Weather Guides</a>
                 <a href="privacy.html">Privacy Policy</a>
                 <a href="contact.html">Contact</a>
             </nav>
