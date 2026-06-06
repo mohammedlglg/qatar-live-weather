@@ -70,6 +70,7 @@ let currentLang       = 'en';
 let currentRegionKey  = 'DOHA';
 let currentUnit       = 'C';
 let activeMarkerEl    = null;
+let _suppressRegionChange = false; // BUG-FIX #5: prevent spurious updateView on lang/theme toggle
 
 // Cache with TTL: stores { data, ts }
 const weatherCache  = new Map();
@@ -446,6 +447,38 @@ async function fetchMoon(town) {
     } catch { return '🌙'; }
 }
 
+/* ═══════════════════════════════════════════════════════════
+   NIGHT-AWARE HOURLY ICON  (BUG-FIX #4)
+   wttr.in returns weatherCode 113 for both "Sunny" (daytime)
+   and "Clear" (nighttime). Compare the slot time against
+   today's sunrise/sunset to return 🌙 for night-clear hours.
+   ═══════════════════════════════════════════════════════════ */
+function getHourlyIcon(code, slotTime, sunriseStr, sunsetStr) {
+    if (code === 113 && sunriseStr && sunsetStr) {
+        // slotTime is 0, 300, 600 … 2100 (HHMM without colon)
+        const slotMins = Math.floor(slotTime / 100) * 60 + (slotTime % 100);
+
+        // Parse wttr.in time strings like "06:30 AM" or "07:05 PM"
+        const toMins = str => {
+            const m = str.match(/(\d+):(\d+)\s*(AM|PM)/i);
+            if (!m) return null;
+            let h = +m[1], min = +m[2];
+            if (m[3].toUpperCase() === 'PM' && h !== 12) h += 12;
+            if (m[3].toUpperCase() === 'AM' && h === 12) h = 0;
+            return h * 60 + min;
+        };
+
+        const sunriseMins = toMins(sunriseStr);
+        const sunsetMins  = toMins(sunsetStr);
+
+        if (sunriseMins !== null && sunsetMins !== null) {
+            const isNight = slotMins < sunriseMins || slotMins >= sunsetMins;
+            return isNight ? '🌙' : '☀️';
+        }
+    }
+    return WTTR_ICONS[code] || '🌡️';
+}
+
 function parseWttr(data) {
     const c = data.current_condition?.[0] || {};
     const w = data.weather?.[0]           || {};
@@ -488,7 +521,7 @@ function parseWttr(data) {
             time:               h.time,
             temp:               rnd(h.tempC),        tempF:         rnd(h.tempF),
             feelsC:             rnd(h.FeelsLikeC),   feelsF:        rnd(h.FeelsLikeF),
-            icon:               WTTR_ICONS[+h.weatherCode] || '🌡️',
+            icon:               getHourlyIcon(+h.weatherCode, +h.time, a.sunrise, a.sunset),  // BUG-FIX #4
             rain:               rnd(h.chanceofrain),
             chanceofrain:       +h.chanceofrain       || 0,
             chanceofsunshine:   +h.chanceofsunshine   || 0,
@@ -1157,7 +1190,9 @@ function buildLegend() {
         onAdd() {
             const div = L.DomUtil.create('div', 'map-legend');
             div.setAttribute('aria-label', 'Temperature colour legend');
-            const t   = T[currentLang].tempLegend;
+            // BUG-FIX #2 & #3: legend title reflects current language AND unit
+            const unitStr = currentUnit === 'F' ? '°F' : (currentLang === 'ar' ? '°م' : '°C');
+            const t = `${T[currentLang].tempLegend} (${unitStr})`;
             // Bug 2: use °F ranges when °F is active; Bug 3: wrap labels in dir="ltr"
             const rows = currentUnit === 'F'
                 ? [[105,'> 104°F'],[97,'97–104°F'],[88,'88–95°F'],[79,'79–86°F'],[0,'< 79°F']]
@@ -1234,7 +1269,13 @@ function setLang(lang) {
     updateCookieBannerLang();
 
     const key = document.getElementById('region-select').value;
+    // BUG-FIX #5: suppress change event so buildSelect doesn't trigger updateView
+    _suppressRegionChange = true;
     buildSelect(key);
+    document.getElementById('region-select').value = key;
+    const rsmEl = document.getElementById('region-select-m');
+    if (rsmEl) rsmEl.value = key;
+    _suppressRegionChange = false;
     buildLegend();
     if (map) buildBasemapControl();
     updateFreshnessLabel();
@@ -1343,10 +1384,12 @@ function initMap() {
     buildBasemapControl();
 
     document.getElementById('region-select').addEventListener('change', e => {
+        if (_suppressRegionChange) return; // BUG-FIX #5
         updateView(e.target.value);
     });
     const rsm = document.getElementById('region-select-m');
     if (rsm) rsm.addEventListener('change', e => {
+        if (_suppressRegionChange) return; // BUG-FIX #5
         document.getElementById('region-select').value = e.target.value;
         updateView(e.target.value);
     });
@@ -1604,11 +1647,17 @@ window.onload = () => {
     document.getElementById('region-select').value = initialRegion;
     buildSelect(initialRegion);
 
-    setTimeout(() => {
-        try { updateView(initialRegion, true); }
-        catch (e) {
-            console.error('Boot error:', e);
-            document.getElementById('loading').style.display = 'none';
-        }
-    }, 300);
+    // BUG-FIX #1: double-rAF ensures Leaflet's container has its CSS
+    // dimensions before updateView calls map.invalidateSize().
+    // The old 300 ms setTimeout + bare try/catch was silently eating
+    // errors and occasionally racing the map container layout.
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            updateView(initialRegion, true).catch(e => {
+                console.error('Boot updateView error:', e);
+                const loadingEl = document.getElementById('loading');
+                if (loadingEl) loadingEl.style.display = 'none';
+            });
+        });
+    });
 };

@@ -74,7 +74,7 @@ const T = {
         quickFacts:  "Quick Facts",
         wikiSource:  "Source: Wikipedia",
         searching:   "Searching local history...",
-        tempLegend:  "Temp (°C)",
+        tempLegend:  "Temp",  // unit appended dynamically in buildLegend (BUG-FIX #2/#3)
         fallback:    (n, r) => `${n} is an important area in ${r}, Qatar.`,
 
         // Alerts
