@@ -3,9 +3,11 @@
  * Qatar Live Weather Map
  * Cache-first for app shell assets, network-first for weather API.
  * by mohammedlglg
+ *
+ * v2 — bumped to force cache refresh after app.js bug fix
  */
 
-const CACHE_NAME  = 'qatar-weather-v1';
+const CACHE_NAME  = 'qatar-weather-v2';
 const SHELL_ASSETS = [
     './',
     './index.html',
