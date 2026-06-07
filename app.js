@@ -1586,7 +1586,7 @@ window.onload = () => {
         weatherCache.clear();
         updateView(currentRegionKey);
     });
-    document.getElementById('alert-dismiss').addEventListener('click', () => {
+    document.getElementById('alert-dismiss')?.addEventListener('click', () => {
         document.getElementById('alert-banner').style.display = 'none';
     });
 
