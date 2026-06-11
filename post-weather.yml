@@ -18,6 +18,7 @@
 name: Post Qatar Weather to X
 
 on:
+branches: [main]
   schedule:
     - cron: '0 5 * * *'    # 08:00 AM Doha time
     - cron: '0 9 * * *'    # 12:00 PM Doha time
