@@ -1,39 +1,92 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
+  <!-- Home -->
   <url>
     <loc>https://qatarliveweather.com/</loc>
-    <lastmod>2026-06-03</lastmod>
+    <lastmod>2026-06-14</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
 
+  <!-- Guides hub -->
   <url>
     <loc>https://qatarliveweather.com/articles.html</loc>
-    <lastmod>2026-06-03</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
 
+  <!-- ════════════════════════════════════════════════════════════
+       EXISTING ARTICLES
+       ⚠️ VERIFY these four filenames against your real articles.html
+       links and correct any that differ before committing.
+       ════════════════════════════════════════════════════════════ -->
   <url>
-    <loc>https://qatarliveweather.com/about.html</loc>
-    <lastmod>2026-06-03</lastmod>
+    <loc>https://qatarliveweather.com/article-heat-safety.html</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://qatarliveweather.com/article-shamal-winds.html</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://qatarliveweather.com/article-best-time-to-visit.html</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://qatarliveweather.com/article-uv-safety.html</loc>
+    <lastmod>2026-06-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
+  <!-- ════════════════════════════════════════════════════════════
+       NEW ARTICLES (added June 2026)
+       ════════════════════════════════════════════════════════════ -->
   <url>
-    <loc>https://qatarliveweather.com/privacy.html</loc>
-    <lastmod>2026-06-03</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.4</priority>
+    <loc>https://qatarliveweather.com/article-monthly-guide.html</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://qatarliveweather.com/article-sandstorm-prep.html</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://qatarliveweather.com/article-ramadan-weather.html</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
 
+  <!-- Static pages -->
+  <url>
+    <loc>https://qatarliveweather.com/about.html</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
   <url>
     <loc>https://qatarliveweather.com/contact.html</loc>
-    <lastmod>2026-06-03</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.4</priority>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://qatarliveweather.com/privacy.html</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
   </url>
 
 </urlset>

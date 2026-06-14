@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Contact Qatar Live Weather — send feedback, report bugs, or suggest features for our real-time Qatar weather map.">
     <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://qatarliveweather.com/contact.html">
     <title>Contact — Qatar Live Weather</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,6 +15,12 @@
         No AdSense on this page — it is a thin static contact form.
         Ads only run on index.html after live weather content has loaded.
     -->
+    <style>
+        .form-status { font-size:13px; margin-top:10px; padding:10px 14px; border-radius:var(--radius-sm); display:none; line-height:1.6; }
+        .form-status.ok   { display:block; background:var(--accent-light); color:var(--accent-dark); border:1px solid var(--accent); }
+        .form-status.err  { display:block; background:var(--danger-light); color:var(--danger); border:1px solid var(--danger); }
+        .form-submit:disabled { opacity:.6; cursor:not-allowed; }
+    </style>
 </head>
 <body>
 
@@ -31,6 +38,7 @@
                 <span>Qatar Live Weather</span>
             </a>
             <div class="nav-actions">
+                <a href="articles.html" class="icon-btn" style="text-decoration:none">📚 Guides</a>
                 <a href="index.html" class="icon-btn" style="text-decoration:none">← Back to Map</a>
             </div>
         </div>
@@ -47,7 +55,22 @@
         <div class="static-section">
             <h2>Send a Message</h2>
             <p>Fill in the form below and we'll get back to you as soon as possible. Alternatively, you can reach out directly via GitHub or Twitter.</p>
-            <form class="contact-form" action="mailto:contact@qatarliveweather.com" method="get" enctype="text/plain">
+
+            <!--
+                ┌─────────────────────────────────────────────────────────────┐
+                │  FORMSPREE SETUP — REQUIRED BEFORE THIS FORM WILL WORK        │
+                │                                                              │
+                │  1. Go to https://formspree.io and create a free account     │
+                │  2. Create a new form; copy its endpoint, e.g.               │
+                │       https://formspree.io/f/abcdwxyz                        │
+                │  3. Replace YOUR_FORM_ID below (in BOTH the action attribute │
+                │     AND the fetch URL in the <script>) with your real ID.    │
+                │  4. Commit. First real submission triggers Formspree's       │
+                │     one-time email confirmation — confirm it once.           │
+                └─────────────────────────────────────────────────────────────┘
+            -->
+            <form id="contactForm" class="contact-form"
+                  action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
                 <div class="form-group">
                     <label for="cf-name">Your Name</label>
                     <input type="text" id="cf-name" name="name" placeholder="e.g. Ahmed Al-Mansouri" autocomplete="name" required>
@@ -68,9 +91,13 @@
                 </div>
                 <div class="form-group">
                     <label for="cf-msg">Message</label>
-                    <textarea id="cf-msg" name="body" placeholder="Tell us what's on your mind..." required></textarea>
+                    <textarea id="cf-msg" name="message" placeholder="Tell us what's on your mind..." required></textarea>
                 </div>
-                <button type="submit" class="form-submit">Send Message →</button>
+                <!-- Honeypot anti-spam field — hidden from humans, bots fill it in -->
+                <input type="text" name="_gotcha" tabindex="-1" autocomplete="off"
+                       style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0" aria-hidden="true">
+                <button type="submit" class="form-submit" id="cf-btn">Send Message →</button>
+                <div class="form-status" id="cf-status" role="status" aria-live="polite"></div>
             </form>
         </div>
 
@@ -119,10 +146,10 @@
             </div>
             <nav class="footer-nav" aria-label="Footer navigation">
                 <a href="index.html">Home</a>
+                <a href="articles.html">Guides</a>
                 <a href="about.html">About</a>
-                <a href="articles.html">Weather Guides</a>
                 <a href="privacy.html">Privacy Policy</a>
-                <a href="contact.html" aria-current="page">Contact</a>
+                <a href="contact.html">Contact</a>
             </nav>
         </div>
         <div class="footer-bottom">
@@ -130,6 +157,50 @@
             <div class="sig-badge">by <span>mohammedlglg</span></div>
         </div>
     </footer>
+
+    <script>
+        // AJAX submit to Formspree — keeps the user on-page, shows inline status.
+        (function () {
+            var form   = document.getElementById('contactForm');
+            var btn    = document.getElementById('cf-btn');
+            var status = document.getElementById('cf-status');
+            if (!form) return;
+
+            form.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                status.className = 'form-status';
+                status.textContent = '';
+                btn.disabled = true;
+                btn.textContent = 'Sending…';
+
+                try {
+                    var res = await fetch(form.action, {
+                        method: 'POST',
+                        body: new FormData(form),
+                        headers: { 'Accept': 'application/json' }
+                    });
+
+                    if (res.ok) {
+                        form.reset();
+                        status.className = 'form-status ok';
+                        status.textContent = '✅ Thank you! Your message has been sent. We\'ll get back to you soon.';
+                    } else {
+                        var data = await res.json().catch(function () { return {}; });
+                        var msg = (data.errors && data.errors.map(function (x) { return x.message; }).join(', '))
+                                  || 'Something went wrong. Please try again, or email us via GitHub.';
+                        status.className = 'form-status err';
+                        status.textContent = '⚠️ ' + msg;
+                    }
+                } catch (err) {
+                    status.className = 'form-status err';
+                    status.textContent = '⚠️ Network error. Please check your connection and try again.';
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = 'Send Message →';
+                }
+            });
+        })();
+    </script>
 
 </body>
 </html>
