@@ -1,1 +1,1 @@
-google.com, pub-2032436364726427, DIRECT, f08c47fec0942fa0
+# ads.txt — no active Google AdSense configured
