@@ -8,7 +8,6 @@
     <meta name="author" content="mohammedlglg">
     <meta name="theme-color" content="#059669">
     <meta name="robots" content="index, follow">
-    <meta name="google-adsense-account" content="ca-pub-2032436364726427">
 
     <!-- Canonical -->
     <link rel="canonical" href="https://qatarliveweather.com">
@@ -43,11 +42,7 @@
     <!-- App Stylesheet -->
     <link rel="stylesheet" href="style.css">
 
-    <!-- Ad slot hidden by default — revealed only after weather data loads -->
     <style>
-        .adsense-slot { display: none; }
-        .adsense-slot.ads-ready { display: block; }
-
         /* ── CLIMATE INFO SECTION ───────────────────────────── */
         .climate-section {
             max-width: 1200px;
@@ -116,6 +111,19 @@
         @media (max-width: 640px) {
             .climate-grid { grid-template-columns: 1fr; }
         }
+
+        /* ── AD SLOTS ───────────────────────────────────────── */
+        .ad-slots-wrap {
+            max-width: 1200px;
+            margin: 16px auto;
+            padding: 0 24px;
+            text-align: center;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            align-items: center;
+        }
     </style>
 
     <!-- JSON-LD Structured Data -->
@@ -143,24 +151,53 @@
           "url": "https://qatarliveweather.com/",
           "applicationCategory": "WeatherApplication",
           "operatingSystem": "Any",
-          "description": "Live weather map covering all Qatar municipalities with temperature, humidity, wind, UV index, prayer times, forecasts, and astronomy data."
+          "description": "Live weather map covering all Qatar municipalities with temperature, humidity, wind, UV index, prayer times, forecasts, and astronomy data.",
+          "featureList": [
+            "Real-time temperature map",
+            "3-day weather forecast",
+            "Hourly weather forecast",
+            "UV Index tracking",
+            "Prayer times integration",
+            "Arabic / English bilingual",
+            "Dark mode support",
+            "Offline PWA support"
+          ],
+          "areaServed": {
+            "@type": "Country",
+            "name": "Qatar"
+          }
         }
       ]
     }
     </script>
-    <script src="https://pl29742603.effectivecpmnetwork.com/6e/16/da/6e16da53d5e38e0bf15dcb4c510f6fd8.js"></script>
+
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-YWEKPB5X90"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-YWEKPB5X90');
+    </script>
 
 </head>
 <body>
 
-    <!-- ── COOKIE CONSENT BANNER ───────────────────────────────── -->
-    <div class="cookie-banner" id="cookie-banner" role="dialog" aria-labelledby="cookie-title" aria-describedby="cookie-desc">
+    <!-- ── HEAT / DUST ALERT BANNER ──────────────────────────── -->
+    <div id="alert-banner" class="alert-banner" style="display:none" role="alert" aria-live="assertive">
+        <span id="alert-icon">⚠️</span>
+        <span id="alert-text"></span>
+        <button class="alert-dismiss" id="alert-dismiss" aria-label="Dismiss alert">✕</button>
+    </div>
+
+    <!-- ── COOKIE CONSENT BANNER ─────────────────────────────── -->
+    <div id="cookie-banner" class="cookie-banner" role="dialog" aria-label="Cookie consent" aria-modal="false" style="display:none">
         <div class="cookie-inner">
             <div class="cookie-text">
                 <span class="cookie-icon" aria-hidden="true">🍪</span>
                 <div>
                     <strong id="cookie-title">We use cookies</strong>
-                    <p id="cookie-desc">We use Google Analytics and AdSense cookies to improve your experience and serve relevant ads. See our <a href="privacy.html" id="cookie-privacy-link">Privacy Policy</a>.</p>
+                    <p id="cookie-desc">This site uses Google Analytics cookies to improve your experience. See our <a href="privacy.html" id="cookie-privacy-link">Privacy Policy</a>.</p>
                 </div>
             </div>
             <div class="cookie-actions">
@@ -185,8 +222,6 @@
                 <h1 class="nav-brand-title" id="nav-title" style="font-size:inherit;font-weight:inherit;margin:0;display:inline">Qatar Live Weather</h1>
             </div>
             <div class="nav-actions">
-                <!-- Weather Guides link -->
-                <a href="articles.html" class="icon-btn" style="text-decoration:none">📰 Guides</a>
                 <!-- Language pill -->
                 <div class="lang-pill" role="group" aria-label="Language selector">
                     <button id="btn-en" class="lang-btn active" aria-pressed="true" aria-label="Switch to English">EN</button>
@@ -203,7 +238,7 @@
                     <button class="icon-btn" id="btnF" aria-pressed="false">°F</button>
                 </div>
                 <!-- Geolocation -->
-                <button class="icon-btn geo-btn" id="geoBtn" title="Use my location" aria-label="Use my location">
+                <button class="icon-btn geo-btn" id="geoBtn" title="Find nearest location" aria-label="Use my location">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
                          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3"/>
@@ -279,22 +314,93 @@
         </div>
     </div>
 
-    <!-- ── AD SLOT: shown only after weather data has loaded ─── -->
-    <!--
-        This slot is hidden by default (.adsense-slot has display:none).
-        app.js calls initAds() after updateView() completes, which adds
-        the class "ads-ready" and pushes the ad unit — ensuring Google
-        never sees an ad alongside an empty/loading screen.
-    -->
-    <div class="adsense-slot" id="ad-slot-main" aria-hidden="true">
-        <div style="max-width:1200px;margin:16px auto;padding:0 24px;text-align:center;">
-            <ins class="adsbygoogle"
-                 style="display:block"
-                 data-ad-client="ca-pub-2032436364726427"
-                 data-ad-slot="auto"
-                 data-ad-format="auto"
-                 data-full-width-responsive="true"></ins>
+    <!-- ── AD SLOTS ─────────────────────────────────────────────── -->
+    <div class="ad-slots-wrap">
+
+        <!-- 728×90 Leaderboard -->
+        <div>
+            <script type="text/javascript">
+                atOptions = {
+                    'key' : 'a4b9ad4ca0fd7d702ebd4ec9b2c9d0f9',
+                    'format' : 'iframe',
+                    'height' : 90,
+                    'width' : 728,
+                    'params' : {}
+                };
+            </script>
+            <script type="text/javascript" src="https://www.highperformanceformat.com/a4b9ad4ca0fd7d702ebd4ec9b2c9d0f9/invoke.js"></script>
         </div>
+
+        <!-- 300×250 Rectangle -->
+        <div>
+            <script type="text/javascript">
+                atOptions = {
+                    'key' : 'b742eebf5a24f908522565c33aa44599',
+                    'format' : 'iframe',
+                    'height' : 250,
+                    'width' : 300,
+                    'params' : {}
+                };
+            </script>
+            <script type="text/javascript" src="https://www.highperformanceformat.com/b742eebf5a24f908522565c33aa44599/invoke.js"></script>
+        </div>
+
+        <!-- 300×160 Rectangle -->
+        <div>
+            <script type="text/javascript">
+                atOptions = {
+                    'key' : '2ed0753defc3b67db275756e5a4f81b4',
+                    'format' : 'iframe',
+                    'height' : 300,
+                    'width' : 160,
+                    'params' : {}
+                };
+            </script>
+            <script type="text/javascript" src="https://www.highperformanceformat.com/2ed0753defc3b67db275756e5a4f81b4/invoke.js"></script>
+        </div>
+
+        <!-- 160×600 Wide Skyscraper -->
+        <div>
+            <script type="text/javascript">
+                atOptions = {
+                    'key' : '7cc80251e686d59c5358d63edcfe02f0',
+                    'format' : 'iframe',
+                    'height' : 600,
+                    'width' : 160,
+                    'params' : {}
+                };
+            </script>
+            <script type="text/javascript" src="https://www.highperformanceformat.com/7cc80251e686d59c5358d63edcfe02f0/invoke.js"></script>
+        </div>
+
+        <!-- 320×50 Mobile Banner -->
+        <div>
+            <script type="text/javascript">
+                atOptions = {
+                    'key' : 'c299a3d2a42f1cf59a7174ff1b07baa7',
+                    'format' : 'iframe',
+                    'height' : 50,
+                    'width' : 320,
+                    'params' : {}
+                };
+            </script>
+            <script type="text/javascript" src="https://www.highperformanceformat.com/c299a3d2a42f1cf59a7174ff1b07baa7/invoke.js"></script>
+        </div>
+
+        <!-- 468×60 Half Banner -->
+        <div>
+            <script type="text/javascript">
+                atOptions = {
+                    'key' : '8eb7d8249a1a780c25c4368f25e88c2a',
+                    'format' : 'iframe',
+                    'height' : 60,
+                    'width' : 468,
+                    'params' : {}
+                };
+            </script>
+            <script type="text/javascript" src="https://www.highperformanceformat.com/8eb7d8249a1a780c25c4368f25e88c2a/invoke.js"></script>
+        </div>
+
     </div>
 
     <!-- ── QATAR CLIMATE INFORMATION ─────────────────────────── -->
@@ -339,25 +445,20 @@
 
             <div class="climate-card">
                 <h3>🔥 Heat Safety in Qatar</h3>
-                <p>During June–September, outdoor conditions can be dangerous. The combination of temperatures above 40°C and humidity above 60% creates a heat index that far exceeds the thermometer reading.</p>
-                <p style="margin-top:8px"><strong>Key safety thresholds:</strong></p>
-                <p style="margin-top:4px">— Feels like &gt;46°C: Avoid outdoor activity<br>
-                — UV Index &gt;8: Full sun protection required<br>
-                — Visibility &lt;1 km: Dust/sandstorm conditions<br>
-                — Humidity &gt;75%: High heat stroke risk</p>
-                <p style="margin-top:8px">Qatar mandates a midday work ban (11:30–15:00) for outdoor workers from 1 June to 15 September each year.</p>
+                <p>During June–September, outdoor conditions can be dangerous. Temperatures regularly exceed 40°C with heat index values above 50°C when humidity is factored in. Workers are legally protected under Qatar Labour Law — outdoor work is banned between 10:00 and 15:30 from 1 June to 15 September.</p>
+                <p style="margin-top:8px">Stay hydrated (3–4 litres of water per day), avoid direct sun between 10:00–16:00, and watch for signs of heat exhaustion: dizziness, nausea, rapid heartbeat.</p>
             </div>
 
             <div class="climate-card">
-                <h3>🌬️ Wind &amp; Dust Events</h3>
-                <p>The <em>Shamal</em> — a northwesterly wind — is the most significant wind pattern in Qatar. It can bring dust and sandstorms, especially in spring. Sustained Shamal winds of 40–60 km/h combined with low humidity cause rapid desiccation and reduce visibility to under 1 km.</p>
-                <p style="margin-top:8px">The <em>Kaus</em> (southeasterly) and <em>Barih</em> (northerly) are secondary wind patterns. During summer nights, the sea breeze from the Arabian Gulf provides some relief to coastal areas like Doha and The Pearl.</p>
+                <h3>🌪️ Shamal Winds &amp; Dust Storms</h3>
+                <p>The Shamal is a north-westerly wind that affects Qatar primarily in June–July and December–January. Summer Shamal events bring dust and sand storms that can reduce visibility to under 1 km. The PM10 particulate concentration during major events can exceed 1,000 μg/m³ — 20× the WHO guideline.</p>
+                <p style="margin-top:8px">During dust events: keep windows closed, wear an N95 mask outdoors, avoid driving, and monitor air quality alerts.</p>
             </div>
 
             <div class="climate-card">
-                <h3>☔ Rainfall &amp; Humidity</h3>
-                <p>Rain in Qatar is infrequent but can be intense when it occurs. Winter rainfall events can cause flash flooding in Doha due to limited drainage infrastructure. The wettest month is typically February (average ~18 mm).</p>
-                <p style="margin-top:8px">Humidity is highest from July to August when sea surface temperatures peak. Coastal Doha regularly records relative humidity above 80% at night during these months, while inland areas like Dukhan remain drier.</p>
+                <h3>💧 Humidity &amp; Rainfall</h3>
+                <p>Qatar's proximity to the Arabian Gulf means coastal humidity is very high from May through September. Doha averages relative humidity above 60% in summer months, with nighttime values often exceeding 85%.</p>
+                <p style="margin-top:8px">The wettest month is typically February (average ~18 mm). Humidity is highest from July to August when sea surface temperatures peak. Coastal Doha regularly records relative humidity above 80% at night during these months, while inland areas like Dukhan remain drier.</p>
             </div>
 
             <div class="climate-card">
@@ -391,7 +492,6 @@
             </div>
             <nav class="footer-nav" aria-label="Footer navigation">
                 <a href="about.html">About</a>
-                <a href="articles.html">Weather Guides</a>
                 <a href="privacy.html">Privacy Policy</a>
                 <a href="contact.html">Contact</a>
             </nav>
@@ -399,8 +499,8 @@
         <div class="footer-bottom">
             <span class="footer-data">
                 <strong>Data:</strong>
-                <a href="https://wttr.in" target="_blank" rel="noopener">wttr.in</a> &middot;
-                <a href="https://wikipedia.org" target="_blank" rel="noopener">Wikipedia</a> &middot;
+                <a href="https://wttr.in" target="_blank" rel="noopener">wttr.in</a> &amp;
+                <a href="https://wikipedia.org" target="_blank" rel="noopener">Wikipedia</a> &amp;
                 <a href="https://aladhan.com" target="_blank" rel="noopener">Aladhan</a>
                 &nbsp;·&nbsp;
                 <span class="footer-disclaimer" id="footer-disclaimer">Weather data is provided for informational purposes only and is not official Qatar Met Department data.</span>
@@ -422,77 +522,11 @@
     <script src="data.js"></script>
     <script src="app.js"></script>
 
-    <!--
-        AdSense library loaded LAST — after all page content is in the DOM.
-        The actual ad push (adsbygoogle.push) happens inside app.js → initAds(),
-        which is called only once weather markers have successfully rendered.
-    -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2032436364726427" crossorigin="anonymous"></script>
-    
-<script async="async" data-cfasync="false" src="https://pl29742604.effectivecpmnetwork.com/bffa4ec8a27b8d32465dc0c2828f005e/invoke.js"></script>
-<div id="container-bffa4ec8a27b8d32465dc0c2828f005e"></div>
-<script>
-  atOptions = {
-    'key' : '8eb7d8249a1a780c25c4368f25e88c2a',
-    'format' : 'iframe',
-    'height' : 60,
-    'width' : 468,
-    'params' : {}
-  };
-</script>
-<script src="https://www.highperformanceformat.com/8eb7d8249a1a780c25c4368f25e88c2a/invoke.js"></script>
-<script src="https://pl29742612.effectivecpmnetwork.com/85/6d/a1/856da13c0a5843cf22aceed6a6a8309e.js"></script>
-https://www.effectivecpmnetwork.com/sui2tize0k?key=af3742f3132f449c46cdafe4f23d8c9b
-    <script>
-  atOptions = {
-    'key' : 'a4b9ad4ca0fd7d702ebd4ec9b2c9d0f9',
-    'format' : 'iframe',
-    'height' : 90,
-    'width' : 728,
-    'params' : {}
-  };
-</script>
-<script src="https://www.highperformanceformat.com/a4b9ad4ca0fd7d702ebd4ec9b2c9d0f9/invoke.js"></script>
-<script>
-  atOptions = {
-    'key' : 'c299a3d2a42f1cf59a7174ff1b07baa7',
-    'format' : 'iframe',
-    'height' : 50,
-    'width' : 320,
-    'params' : {}
-  };
-</script>
-<script src="https://www.highperformanceformat.com/c299a3d2a42f1cf59a7174ff1b07baa7/invoke.js"></script>
-<script>
-  atOptions = {
-    'key' : '7cc80251e686d59c5358d63edcfe02f0',
-    'format' : 'iframe',
-    'height' : 600,
-    'width' : 160,
-    'params' : {}
-  };
-</script>
-<script src="https://www.highperformanceformat.com/7cc80251e686d59c5358d63edcfe02f0/invoke.js"></script>
-<script>
-  atOptions = {
-    'key' : '2ed0753defc3b67db275756e5a4f81b4',
-    'format' : 'iframe',
-    'height' : 300,
-    'width' : 160,
-    'params' : {}
-  };
-</script>
-<script src="https://www.highperformanceformat.com/2ed0753defc3b67db275756e5a4f81b4/invoke.js"></script>
-<script>
-  atOptions = {
-    'key' : 'b742eebf5a24f908522565c33aa44599',
-    'format' : 'iframe',
-    'height' : 250,
-    'width' : 300,
-    'params' : {}
-  };
-</script>
-<script src="https://www.highperformanceformat.com/b742eebf5a24f908522565c33aa44599/invoke.js"></script>
+    <!-- ── Third-party ad network scripts ──────────────────────── -->
+    <script src="https://pl29742603.effectivecpmnetwork.com/6e/16/da/6e16da53d5e38e0bf15dcb4c510f6fd8.js"></script>
+    <script async="async" data-cfasync="false" src="https://pl29742604.effectivecpmnetwork.com/bffa4ec8a27b8d32465dc0c2828f005e/invoke.js"></script>
+    <div id="container-bffa4ec8a27b8d32465dc0c2828f005e"></div>
+    <script src="https://pl29742612.effectivecpmnetwork.com/85/6d/a1/856da13c0a5843cf22aceed6a6a8309e.js"></script>
 
 </body>
 </html>
